@@ -1,11 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
+import { ASSETS, ASSET_IDS, fmtUnits, toUsd } from "./assets"
+import type { Asset } from "./assets"
 import { campaignContributions, computeMatches, campaignMatches } from "./matching"
 import { PROJECT_DEPOSIT, PROPOSE_MIN_POINTS, STATE_VERSION, buildSeed, rng } from "./seed"
 import type {
   Campaign,
   Category,
-  Currency,
   Fund,
   Mechanism,
   PointsReason,
@@ -24,6 +25,7 @@ export const POINT_RULES = {
   referral: 500,
   referralShare: 0.1,
   perBread: 10,
+  perEndowedUsd: 100,
   perFundBread: 20,
   earlyBacker: 50,
   earlyBackerSlots: 10,
@@ -97,12 +99,33 @@ export function fundPledged(s: State, fundId: string) {
     .reduce((a, d) => a + d.amount, 0)
 }
 
-export function totalSupply(s: State) {
-  return s.otherSupply + s.me.bread
+/** Units of an asset in the Wealth Fund: art tokens people hold plus permanent endowments. */
+export function wealthUnits(s: State, a: Asset) {
+  return s.supply[a] + s.me.art[a] + s.endowed[a]
 }
 
+/** Total dollar value of the Artizenal Wealth Fund. */
+export function totalSupply(s: State) {
+  return ASSET_IDS.reduce((t, a) => t + toUsd(a, wealthUnits(s, a)), 0)
+}
+
+/** Dollars of yield the whole Wealth Fund earns per day, across all three assets. */
 export function dailyYield(s: State) {
-  return (totalSupply(s) * s.apy) / 365
+  return ASSET_IDS.reduce((t, a) => t + (toUsd(a, wealthUnits(s, a)) * ASSETS[a].apy) / 365, 0)
+}
+
+/** Weighted interest rate across the Wealth Fund. */
+export function blendedApy(s: State) {
+  const total = totalSupply(s)
+  return total ? (dailyYield(s) * 365) / total : 0
+}
+
+export function myHoldingsUsd(s: State) {
+  return ASSET_IDS.reduce((t, a) => t + toUsd(a, s.me.art[a]), 0)
+}
+
+export function endowedBy(s: State, uid: string) {
+  return s.endowments.filter((e) => e.userId === uid).reduce((t, e) => t + e.usd, 0)
 }
 
 export function getFund(s: State, id: string) {
@@ -119,7 +142,7 @@ export function getUser(s: State, id: string) {
 
 export function projectStats(s: State, pid: string) {
   const ds = s.donations.filter((d) => d.projectId === pid)
-  const bread = ds.filter((d) => d.currency === "BREAD").reduce((a, d) => a + d.amount, 0)
+  const bread = ds.reduce((a, d) => a + d.amount, 0)
   const donors = new Set(ds.map((d) => d.from)).size
   let matched = 0
   let pendingMatch = 0
@@ -172,14 +195,15 @@ function addDonation(
   s: State,
   from: string,
   projectId: string,
-  amount: number,
-  currency: Currency,
+  asset: Asset,
+  units: number,
   campaignId?: string
 ) {
   const project = getProject(s, projectId)
   if (!project) return
+  const amount = toUsd(asset, units)
   const priorDonors = new Set(s.donations.filter((d) => d.projectId === projectId).map((d) => d.from))
-  s.donations.push({ id: uid("d"), from, projectId, campaignId, amount, currency, day: s.day })
+  s.donations.push({ id: uid("d"), from, projectId, campaignId, amount, asset, units, day: s.day })
   award(
     s,
     from,
@@ -200,7 +224,7 @@ function settleCampaigns(s: State) {
     c.settled = matches
     const paid = Object.values(matches).reduce((a, b) => a + b, 0)
     fund.reserve += Math.max(0, c.matchingPool - paid) // unspent pool returns to the fund
-    log(s, fund.curators[0], `closed ${c.name}: ${Math.round(paid).toLocaleString()} BREAD matched`, `#/f/${fund.id}`)
+    log(s, fund.curators[0], `closed ${c.name}: ${Math.round(paid).toLocaleString()} artUSD matched`, `#/f/${fund.id}`)
   }
 }
 
@@ -221,7 +245,7 @@ function refundDeposits(s: State) {
     const donors = new Set(s.donations.filter((d) => d.projectId === p.id).map((d) => d.from)).size
     if (donors >= 3 || s.day - p.createdDay >= 14) {
       p.deposit.status = "refunded"
-      if (p.creatorId === ME) s.me.bread += p.deposit.amount
+      if (p.creatorId === ME) s.me.art.USD += p.deposit.amount
       log(s, p.creatorId, `had their spam deposit returned for ${p.title}`, `#/p/${p.id}`)
     }
   }
@@ -243,7 +267,7 @@ function distributeYield(s: State) {
     }
   }
   s.distributions.push({ season: s.season, day: s.day, total, shares, points: pts })
-  log(s, "system", `Season ${s.season} closed. ${Math.round(total).toLocaleString()} BREAD of yield was split across ${active.length} funds by points given`, "#/allocate")
+  log(s, "system", `Season ${s.season} closed. ${Math.round(total).toLocaleString()} artUSD of yield was split across ${active.length} funds by points given`, "#/allocate")
   s.yieldPool = 0
   s.season += 1
   s.seasonStartDay = s.day
@@ -300,7 +324,7 @@ function simulateOthers(s: State) {
     const from = others[Math.floor(r() * others.length)]
     if (getProject(s, pid)?.creatorId === from.id) continue
     const amt = [5, 10, 10, 20, 25, 50][Math.floor(r() * 6)]
-    addDonation(s, from.id, pid, amt, "BREAD", c.id)
+    addDonation(s, from.id, pid, "USD", amt, c.id)
   }
 }
 
@@ -404,34 +428,52 @@ function useStoreValue() {
         })
       },
 
-      bake(amount: number): Result {
+      bake(asset: Asset, units: number): Result {
         return mutate((s) => {
-          if (amount <= 0) return { ok: false, error: "Enter an amount" }
-          if (amount > s.me.usdc) return { ok: false, error: "Not enough USDC in your wallet" }
-          s.me.usdc -= amount
-          s.me.bread += amount
+          const A = ASSETS[asset]
+          if (units <= 0) return { ok: false, error: "Enter an amount" }
+          if (units > s.me.base[asset] + 1e-9) return { ok: false, error: `Not enough ${A.base} in your wallet` }
+          s.me.base[asset] -= units
+          s.me.art[asset] += units
           return { ok: true }
         })
       },
 
-      redeem(amount: number): Result {
+      redeem(asset: Asset, units: number): Result {
         return mutate((s) => {
-          if (amount <= 0) return { ok: false, error: "Enter an amount" }
-          if (amount > s.me.bread) return { ok: false, error: "Not enough BREAD" }
-          s.me.bread -= amount
-          s.me.usdc += amount
+          const A = ASSETS[asset]
+          if (units <= 0) return { ok: false, error: "Enter an amount" }
+          if (units > s.me.art[asset] + 1e-9) return { ok: false, error: `Not enough ${A.token}` }
+          s.me.art[asset] -= units
+          s.me.base[asset] += units
           return { ok: true }
         })
       },
 
-      donate(projectId: string, amount: number, campaignId?: string): Result {
+      endow(asset: Asset, units: number): Result {
         return mutate((s) => {
-          if (amount <= 0) return { ok: false, error: "Enter an amount" }
-          if (amount > s.me.bread) return { ok: false, error: "Not enough BREAD. Convert some USDC first." }
-          s.me.bread -= amount
-          addDonation(s, ME, projectId, amount, "BREAD", campaignId)
+          const A = ASSETS[asset]
+          if (units <= 0) return { ok: false, error: "Enter an amount" }
+          if (units > s.me.base[asset] + 1e-9) return { ok: false, error: `Not enough ${A.base} in your wallet` }
+          const usd = toUsd(asset, units)
+          s.me.base[asset] -= units
+          s.endowed[asset] += units
+          s.endowments.push({ id: uid("e"), userId: ME, asset, units, usd, day: s.day })
+          award(s, ME, usd * POINT_RULES.perEndowedUsd, "endow", `Endowed ${fmtUnits(asset, units)} ${A.base} to the Wealth Fund`)
+          log(s, ME, `permanently endowed ${fmtUnits(asset, units)} ${A.base} to the Wealth Fund`, "#/wealth")
+          return { ok: true }
+        })
+      },
+
+      donate(projectId: string, asset: Asset, units: number, campaignId?: string): Result {
+        return mutate((s) => {
+          const A = ASSETS[asset]
+          if (units <= 0) return { ok: false, error: "Enter an amount" }
+          if (units > s.me.art[asset] + 1e-9) return { ok: false, error: `Not enough ${A.token}. Convert some ${A.base} first.` }
+          s.me.art[asset] -= units
+          addDonation(s, ME, projectId, asset, units, campaignId)
           const p = getProject(s, projectId)!
-          log(s, ME, `donated ${amount} BREAD to ${p.title}`, `#/p/${p.id}`)
+          log(s, ME, `donated ${fmtUnits(asset, units)} ${A.token} to ${p.title}`, `#/p/${p.id}`)
           refundDeposits(s)
           return { ok: true }
         })
@@ -440,9 +482,9 @@ function useStoreValue() {
       donateFund(fundId: string, amount: number, campaignId?: string): Result {
         return mutate((s) => {
           if (amount <= 0) return { ok: false, error: "Enter an amount" }
-          if (amount > s.me.bread) return { ok: false, error: "Not enough BREAD. Convert some USDC first." }
+          if (amount > s.me.art.USD) return { ok: false, error: "Not enough artUSD. Convert some USDC first." }
           const f = getFund(s, fundId)!
-          s.me.bread -= amount
+          s.me.art.USD -= amount
           s.fundDonations.push({ id: uid("fd"), from: ME, fundId, campaignId, amount, day: s.day })
           if (f.status === "active") {
             const c = campaignId ? s.campaigns.find((x) => x.id === campaignId) : undefined
@@ -450,7 +492,7 @@ function useStoreValue() {
             else f.reserve += amount
           }
           award(s, ME, amount * POINT_RULES.perFundBread, "donate-fund", `Gave to ${f.name}`)
-          log(s, ME, f.status === "proposed" ? `pledged ${amount} BREAD to launch ${f.name}` : `added ${amount} BREAD to ${f.name}`, `#/f/${f.id}`)
+          log(s, ME, f.status === "proposed" ? `pledged ${amount} artUSD to launch ${f.name}` : `added ${amount} artUSD to ${f.name}`, `#/f/${f.id}`)
           checkLaunches(s)
           return { ok: true }
         })
@@ -478,10 +520,10 @@ function useStoreValue() {
           const items = s.cart.filter((i) => i.amount > 0)
           const total = items.reduce((a, i) => a + i.amount, 0)
           if (!items.length) return { ok: false, error: "Your basket is empty" }
-          if (total > s.me.bread) return { ok: false, error: `You need ${total} BREAD. Convert a little more USDC first.` }
-          s.me.bread -= total
-          for (const i of items) addDonation(s, ME, i.projectId, i.amount, "BREAD", i.campaignId)
-          log(s, ME, `backed ${items.length} projects with ${total} BREAD`)
+          if (total > s.me.art.USD) return { ok: false, error: `You need ${total} artUSD. Convert a little more USDC first.` }
+          s.me.art.USD -= total
+          for (const i of items) addDonation(s, ME, i.projectId, "USD", i.amount, i.campaignId)
+          log(s, ME, `backed ${items.length} projects with ${total} artUSD`)
           s.cart = []
           refundDeposits(s)
           return { ok: true }
@@ -490,12 +532,12 @@ function useStoreValue() {
 
       createProject(p: NewProject): Result {
         return mutate((s) => {
-          if (s.me.bread < PROJECT_DEPOSIT) return { ok: false, error: `You need ${PROJECT_DEPOSIT} BREAD for the deposit` }
+          if (s.me.art.USD < PROJECT_DEPOSIT) return { ok: false, error: `You need ${PROJECT_DEPOSIT} artUSD for the deposit` }
           const base = p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "project"
           let id = base
           let n = 2
           while (s.projects.some((x) => x.id === id)) id = `${base}-${n++}`
-          s.me.bread -= PROJECT_DEPOSIT
+          s.me.art.USD -= PROJECT_DEPOSIT
           const project: Project = {
             id,
             title: p.title,
@@ -547,7 +589,7 @@ function useStoreValue() {
         return mutate((s) => {
           if (userPoints(s, ME) < PROPOSE_MIN_POINTS)
             return { ok: false, error: `You need ${PROPOSE_MIN_POINTS.toLocaleString()} points to propose a fund` }
-          if (f.initialPledge > s.me.bread) return { ok: false, error: "Not enough BREAD for that pledge" }
+          if (f.initialPledge > s.me.art.USD) return { ok: false, error: "Not enough artUSD for that pledge" }
           const base = f.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "fund"
           let id = base
           let n = 2
@@ -573,7 +615,7 @@ function useStoreValue() {
           award(s, ME, POINT_RULES.proposeFund, "propose-fund", `Proposed ${f.name}`)
           log(s, ME, `proposed the fund ${f.name}`, `#/f/${id}`)
           if (f.initialPledge > 0) {
-            s.me.bread -= f.initialPledge
+            s.me.art.USD -= f.initialPledge
             s.fundDonations.push({ id: uid("fd"), from: ME, fundId: id, amount: f.initialPledge, day: s.day })
             award(s, ME, f.initialPledge * POINT_RULES.perFundBread, "donate-fund", `Pledged to ${f.name}`)
           }
@@ -642,8 +684,8 @@ function useStoreValue() {
             const y = dailyYield(s)
             s.yieldPool += y
             s.yieldLifetime += y
-            s.me.yieldGenerated += (s.me.bread * s.apy) / 365
-            holding += (s.me.bread / 10) * POINT_RULES.holdingPer10PerDay
+            s.me.yieldGenerated += ASSET_IDS.reduce((t, a) => t + (toUsd(a, s.me.art[a]) * ASSETS[a].apy) / 365, 0)
+            holding += (myHoldingsUsd(s) / 10) * POINT_RULES.holdingPer10PerDay
             simulateOthers(s)
             settleCampaigns(s)
             refundDeposits(s)
@@ -652,7 +694,7 @@ function useStoreValue() {
             autoCurate(s)
           }
           const whole = Math.floor(holding)
-          if (whole > 0) award(s, ME, whole, "holding", `Held BREAD for ${days} day${days > 1 ? "s" : ""}`)
+          if (whole > 0) award(s, ME, whole, "holding", `Held artUSD for ${days} day${days > 1 ? "s" : ""}`)
           s.me.holdingCarry = holding - whole
         })
       },
@@ -685,7 +727,7 @@ function useStoreValue() {
           if (live.length) {
             const c = live[Math.floor(Math.random() * live.length)]
             const pid = c.projectIds[Math.floor(Math.random() * c.projectIds.length)]
-            addDonation(s, id, pid, 20, "BREAD", c.id)
+            addDonation(s, id, pid, "USD", 20, c.id)
             log(s, id, `made their first donation to ${getProject(s, pid)?.title}`, `#/p/${pid}`)
           }
           return name

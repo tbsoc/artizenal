@@ -69,7 +69,7 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
       campaignIds,
     })
     if (!r.ok) return toast(r.error, "err")
-    toast(`Project live! ${PROJECT_DEPOSIT} BREAD deposit held, +${num(points)} points`)
+    toast(`Project live! ${PROJECT_DEPOSIT} artUSD deposit held, +${num(points)} points`)
     go(`/p/${r.id}`)
   }
 
@@ -221,13 +221,13 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
               <ShieldCheck size={17} className="text-success" /> Refundable spam deposit
             </div>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              <b className="text-foreground">{PROJECT_DEPOSIT} BREAD</b>, returned after 3 backers or 14 days.
+              <b className="text-foreground">{PROJECT_DEPOSIT} artUSD</b>, returned after 3 backers or 14 days.
             </p>
             <div className="mt-4 flex items-center justify-between rounded-xl bg-muted px-4 py-3 text-sm">
               <span className="text-muted-foreground">Your balance</span>
-              <Bread value={state.me.bread} digits={2} className="font-semibold" />
+              <Bread value={state.me.art.USD} digits={2} className="font-semibold" />
             </div>
-            {state.me.bread < PROJECT_DEPOSIT && (
+            {state.me.art.USD < PROJECT_DEPOSIT && (
               <div className="mt-3">
                 <QuickBake need={PROJECT_DEPOSIT} />
               </div>
@@ -238,7 +238,7 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
                 <Sparkles size={14} /> +{num(points)}
               </span>
             </div>
-            <Button size="lg" className="mt-5 w-full" disabled={!valid || state.me.bread < PROJECT_DEPOSIT} onClick={submit}>
+            <Button size="lg" className="mt-5 w-full" disabled={!valid || state.me.art.USD < PROJECT_DEPOSIT} onClick={submit}>
               Put down deposit & publish
             </Button>
             {!valid && <div className="mt-2 text-center text-xs text-muted-foreground">Fill in the name, pitch, place, goal and a short description.</div>}

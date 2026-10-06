@@ -3,9 +3,10 @@ import { Download, Search } from "lucide-react"
 import { Badge, Bread, Button, Card, Input, Pts, SectionTitle, Stat } from "@/components/ui"
 import { ME, getFund, getProject, getUser, useStore } from "@/lib/store"
 import type { State } from "@/lib/types"
+import { ASSETS, fmtUnits } from "@/lib/assets"
 import { cn, num } from "@/lib/utils"
 
-type Kind = "donation" | "fund-gift" | "yield" | "match" | "deposit" | "points"
+type Kind = "donation" | "fund-gift" | "endowment" | "yield" | "match" | "deposit" | "points"
 
 interface Entry {
   id: string
@@ -15,7 +16,7 @@ interface Entry {
   to: string
   toHref?: string
   amount: number
-  unit: "BREAD" | "points"
+  unit: "artUSD" | "points"
   note: string
 }
 
@@ -26,10 +27,12 @@ const KINDS: { id: Kind | "all"; label: string }[] = [
   { id: "yield", label: "Yield splits" },
   { id: "match", label: "Match payouts" },
   { id: "deposit", label: "Spam deposits" },
+  { id: "endowment", label: "Endowments" },
   { id: "points", label: "Points given" },
 ]
 
 const KIND_LABEL: Record<Kind, string> = {
+  endowment: "Endowment",
   donation: "Donation",
   "fund-gift": "Fund gift",
   yield: "Yield split",
@@ -57,8 +60,21 @@ function buildLedger(s: State): Entry[] {
       to: p?.title ?? d.projectId,
       toHref: `#/p/${d.projectId}`,
       amount: d.amount,
-      unit: d.currency,
-      note: round ? `Counts toward ${round}` : "Outside a round",
+      unit: "artUSD",
+      note: `${d.asset === "USD" ? "" : `${fmtUnits(d.asset, d.units)} ${ASSETS[d.asset].token} · `}${round ? `Counts toward ${round}` : "Outside a round"}`,
+    })
+  }
+  for (const e of s.endowments) {
+    out.push({
+      id: e.id,
+      day: e.day,
+      kind: "endowment",
+      from: who(s, e.userId),
+      to: "Artizenal Wealth Fund",
+      toHref: "#/wealth",
+      amount: e.usd,
+      unit: "artUSD",
+      note: `${fmtUnits(e.asset, e.units)} ${ASSETS[e.asset].base}, permanent`,
     })
   }
   for (const d of s.fundDonations) {
@@ -72,7 +88,7 @@ function buildLedger(s: State): Entry[] {
       to: f?.name ?? d.fundId,
       toHref: `#/f/${d.fundId}`,
       amount: d.amount,
-      unit: "BREAD",
+      unit: "artUSD",
       note: round ? `Matching pool of ${round}` : f?.status === "proposed" ? "Launch pledge" : "Fund reserve",
     })
   }
@@ -88,7 +104,7 @@ function buildLedger(s: State): Entry[] {
         to: getFund(s, fid)?.name ?? fid,
         toHref: `#/f/${fid}`,
         amount,
-        unit: "BREAD",
+        unit: "artUSD",
         note: totalPts ? `Season ${dist.season}: ${num(pts)} ÷ ${num(totalPts)} points = ${((pts / totalPts) * 100).toFixed(1)}%` : `Season ${dist.season}`,
       })
     }
@@ -106,7 +122,7 @@ function buildLedger(s: State): Entry[] {
         to: getProject(s, pid)?.title ?? pid,
         toHref: `#/p/${pid}`,
         amount,
-        unit: "BREAD",
+        unit: "artUSD",
         note: "Matching paid when the round closed",
       })
     }
@@ -120,7 +136,7 @@ function buildLedger(s: State): Entry[] {
       to: `${p.title} (held)`,
       toHref: `#/p/${p.id}`,
       amount: p.deposit.amount,
-      unit: "BREAD",
+      unit: "artUSD",
       note: p.deposit.status === "held" ? "Held until 3 backers or 14 days" : p.deposit.status === "refunded" ? "Returned to creator" : "Forfeited to matching",
     })
   }
@@ -179,7 +195,7 @@ export function Ledger() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <Card className="p-5">
-          <Stat label="Donated to projects" value={<Bread value={sum("donation", "BREAD")} />} />
+          <Stat label="Donated to projects" value={<Bread value={sum("donation", "artUSD")} />} />
         </Card>
         <Card className="p-5">
           <Stat label="Given to funds" value={<Bread value={sum("fund-gift")} />} />
@@ -233,7 +249,7 @@ export function Ledger() {
                 <tr key={r.id} className={cn("border-t border-border", r.from === "You" && "bg-primary/4")}>
                   <td className="px-4 py-2.5 text-muted-foreground tabular-nums">{r.day}</td>
                   <td className="px-3 py-2.5">
-                    <Badge tone={r.kind === "yield" || r.kind === "match" ? "community" : r.kind === "points" ? "ink" : "muted"}>{KIND_LABEL[r.kind]}</Badge>
+                    <Badge tone={r.kind === "yield" || r.kind === "match" || r.kind === "endowment" ? "community" : r.kind === "points" ? "ink" : "muted"}>{KIND_LABEL[r.kind]}</Badge>
                   </td>
                   <td className="max-w-[220px] truncate px-3 py-2.5">{r.from}</td>
                   <td className="max-w-[220px] truncate px-3 py-2.5">
@@ -246,7 +262,7 @@ export function Ledger() {
                     )}
                   </td>
                   <td className="px-3 py-2.5 text-right font-semibold whitespace-nowrap">
-                    {r.unit === "BREAD" ? <Bread value={r.amount} digits={r.amount < 10 ? 2 : 0} /> : <Pts value={r.amount} />}
+                    {r.unit === "artUSD" ? <Bread value={r.amount} digits={r.amount < 10 ? 2 : 0} /> : <Pts value={r.amount} />}
                   </td>
                   <td className="max-w-[300px] truncate px-4 py-2.5 text-xs text-muted-foreground">{r.note}</td>
                 </tr>

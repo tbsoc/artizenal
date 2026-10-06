@@ -24,29 +24,28 @@ export const MECHANISM_INFO: Record<
     name: "1:1 match with cap",
     short: "1:1",
     explain:
-      "Every BREAD donated is matched one-for-one, up to a cap per donor per project. If demand exceeds the pool, everything is scaled down evenly.",
+      "Every artUSD donated is matched one-for-one, up to a cap per donor per project. If demand exceeds the pool, everything is scaled down evenly.",
   },
   multiplier: {
     name: "Fixed multiplier",
     short: "×",
     explain:
-      "Each BREAD donated unlocks a fixed multiple from the pool. If demand exceeds the pool, everything is scaled down evenly.",
+      "Each artUSD donated unlocks a fixed multiple from the pool. If demand exceeds the pool, everything is scaled down evenly.",
   },
 }
 
 export function mechanismLabel(m: Mechanism) {
   if (m.type === "qf") return "Quadratic funding"
-  if (m.type === "match") return `1:1 match, up to ${m.cap} BREAD per donor`
+  if (m.type === "match") return `1:1 match, up to ${m.cap} artUSD per donor`
   return `${m.x}× multiplier`
 }
 
-/** Only BREAD donations made inside a campaign count toward its matching. */
+/** Donations made inside a campaign count toward its matching at their dollar value. */
 export function campaignContributions(campaign: Campaign, donations: Donation[]): Contribution[] {
   return donations
     .filter(
       (d) =>
         d.campaignId === campaign.id &&
-        d.currency === "BREAD" &&
         campaign.projectIds.includes(d.projectId)
     )
     .map((d) => ({ projectId: d.projectId, donor: d.from, amount: d.amount }))
@@ -158,7 +157,7 @@ function matchDelta(
   return perProject
 }
 
-/** Extra match a project would receive if `donor` gave `amount` more BREAD now. */
+/** Extra match a project would receive if `donor` gave `amount` more artUSD now. */
 export function marginalMatch(
   campaign: Campaign,
   mechanism: Mechanism,

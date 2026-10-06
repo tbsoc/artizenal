@@ -236,7 +236,7 @@ export function Tabs<T extends string>({
   )
 }
 
-/** A little loaf, used wherever BREAD appears. */
+/** A little loaf, used wherever artUSD appears. */
 export function Loaf({ size = 14, className }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={cn("inline-block shrink-0", className)} aria-hidden>
@@ -252,11 +252,23 @@ export function Loaf({ size = 14, className }: { size?: number; className?: stri
   )
 }
 
-export function Bread({ value, digits = 0, className, unitClass }: { value: number; digits?: number; className?: string; unitClass?: string }) {
+export function Bread({
+  value,
+  digits = 0,
+  className,
+  unitClass,
+  unit = "artUSD",
+}: {
+  value: number
+  digits?: number
+  className?: string
+  unitClass?: string
+  unit?: string
+}) {
   return (
     <span className={cn("inline-flex items-baseline gap-1 tabular-nums", className)}>
       {num(value, digits)}
-      <span className={cn("text-[0.62em] font-bold tracking-wide text-crust", unitClass)}>BREAD</span>
+      <span className={cn("text-[0.62em] font-bold tracking-wide text-crust", unitClass)}>{unit}</span>
     </span>
   )
 }

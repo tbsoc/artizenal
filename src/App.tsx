@@ -12,6 +12,7 @@ import { Wallet } from "@/pages/Wallet"
 import { Points } from "@/pages/Points"
 import { How } from "@/pages/How"
 import { Ledger } from "@/pages/Ledger"
+import { Wealth } from "@/pages/Wealth"
 
 export default function App() {
   const { path, parts, query } = useRoute()
@@ -46,6 +47,9 @@ export default function App() {
       break
     case "points":
       page = <Points />
+      break
+    case "wealth":
+      page = <Wealth />
       break
     case "ledger":
       page = <Ledger />

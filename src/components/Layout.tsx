@@ -10,6 +10,7 @@ const NAV = [
   { href: "#/", label: "Discover", match: (p: string) => p === "/" },
   { href: "#/projects", label: "Projects", match: (p: string) => p.startsWith("/projects") || p.startsWith("/p/") },
   { href: "#/funds", label: "Funds", match: (p: string) => p.startsWith("/funds") || p.startsWith("/f/") || p.startsWith("/propose") },
+  { href: "#/wealth", label: "Wealth Fund", match: (p: string) => p.startsWith("/wealth") },
   { href: "#/allocate", label: "Points", match: (p: string) => p.startsWith("/allocate") || p.startsWith("/points") },
   { href: "#/ledger", label: "Ledger", match: (p: string) => p.startsWith("/ledger") },
   { href: "#/how", label: "How it works", match: (p: string) => p.startsWith("/how") },
@@ -33,12 +34,12 @@ function SimClock() {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex h-10 items-center gap-2 rounded-full border border-dashed border-coop-ink/40 bg-coop-ink/5 pl-3 pr-2.5 text-sm font-semibold text-coop-ink cursor-pointer hover:bg-coop-ink/10"
+        className="flex h-10 items-center gap-2 whitespace-nowrap rounded-full border border-dashed border-coop-ink/40 bg-coop-ink/5 pl-3 pr-2.5 text-sm font-semibold text-coop-ink cursor-pointer hover:bg-coop-ink/10"
         title="Demo time controls"
       >
         <CalendarClock size={15} />
         <span className="hidden sm:inline">Day</span> {state.day}
-        <span className="hidden font-normal text-coop-ink/70 sm:inline">· S{state.season}</span>
+        <span className="hidden font-normal text-coop-ink/70 2xl:inline">· S{state.season}</span>
         <ChevronDown size={14} className="hidden sm:block" />
       </button>
       {open && (
@@ -116,7 +117,7 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-3 px-4 md:px-8 xl:gap-8">
+        <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-3 px-4 md:px-8 xl:gap-5 2xl:gap-8">
           <a href="#/" className="flex items-center gap-2">
             <BreadLogo size={28} />
             <span className="font-display text-xl font-semibold tracking-tight md:text-[22px]">Artizenal</span>
@@ -127,7 +128,7 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
                 key={n.href}
                 href={n.href}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition",
+                  "rounded-full px-2.5 py-1.5 text-sm font-medium whitespace-nowrap transition 2xl:px-3",
                   n.match(path) ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
@@ -138,14 +139,14 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setAboutOpen(true)}
-              className="hidden h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer xl:flex"
+              className="hidden h-10 items-center gap-1.5 rounded-full px-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer xl:flex"
               title="What is this showcase?"
             >
-              <Info size={16} /> About
+              <Info size={16} /> <span className="hidden 2xl:inline">About</span>
             </button>
             <SimClock />
             <a href="#/wallet" className="hidden h-10 items-center gap-3 rounded-full border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted md:flex" title="Wallet">
-              <Bread value={state.me.bread} digits={state.me.bread % 1 ? 2 : 0} />
+              <Bread value={state.me.art.USD} digits={state.me.art.USD % 1 ? 2 : 0} />
             </a>
             <a href="#/points" className="hidden h-10 items-center rounded-full border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted md:flex" title="Points you can give">
               <Pts value={pointsBalance(state, ME)} />
@@ -196,7 +197,7 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
                 <div className="mt-2 grid grid-cols-2 gap-2 border-t border-border pt-3 md:hidden">
                   <a href="#/wallet" className="flex items-center justify-between rounded-xl bg-card px-3 py-3 text-sm font-semibold border border-border">
                     <span className="text-muted-foreground">Wallet</span>
-                    <Bread value={state.me.bread} digits={state.me.bread % 1 ? 2 : 0} />
+                    <Bread value={state.me.art.USD} digits={state.me.art.USD % 1 ? 2 : 0} />
                   </a>
                   <a href="#/allocate" className="flex items-center justify-between rounded-xl bg-card px-3 py-3 text-sm font-semibold border border-border">
                     <span className="text-muted-foreground">Points</span>

@@ -83,7 +83,7 @@ export function Allocate() {
           {isActive ? (
             <>
               <div className="font-semibold tabular-nums">{(after.ratio[fid] * 100).toFixed(1)}%</div>
-              <div className="text-xs text-muted-foreground tabular-nums">≈ {num(seasonEstimate * after.ratio[fid])} BREAD</div>
+              <div className="text-xs text-muted-foreground tabular-nums">≈ {num(seasonEstimate * after.ratio[fid])} artUSD</div>
             </>
           ) : (
             <div className="text-xs text-muted-foreground">{Math.round((fundTotalPoints(state, fid) / f.backingGoal) * 100)}% to launch</div>
@@ -225,7 +225,7 @@ export function Allocate() {
                         d.shares[f.id] ? (
                           <div
                             key={f.id}
-                            title={`${f.name}: ${num(d.points?.[f.id] ?? 0)} points → ${num(d.shares[f.id])} BREAD`}
+                            title={`${f.name}: ${num(d.points?.[f.id] ?? 0)} points → ${num(d.shares[f.id])} artUSD`}
                             style={{ width: `${(d.shares[f.id] / d.total) * 100}%`, background: colorOf(f.id) }}
                           />
                         ) : null

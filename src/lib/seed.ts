@@ -1,8 +1,11 @@
+import { ASSETS, ASSET_IDS, zero } from "./assets"
+import type { Asset } from "./assets"
 import { campaignContributions, computeMatches } from "./matching"
 import type {
   Activity,
   Campaign,
   Donation,
+  Endowment,
   Fund,
   PointGift,
   PointsEvent,
@@ -11,11 +14,12 @@ import type {
   User,
 } from "./types"
 
-export const STATE_VERSION = 7
+export const STATE_VERSION = 8
 export const PROJECT_DEPOSIT = 25
 export const PROPOSE_MIN_POINTS = 1000
 export const START_USDC = 750
-export const START_BREAD = 250
+export const START_BASE: Record<Asset, number> = { USD: 750, EUR: 400, ETH: 0.25 }
+export const START_ART: Record<Asset, number> = { USD: 250, EUR: 100, ETH: 0.05 }
 
 /** Small deterministic PRNG so the seeded world is the same on every load. */
 export function rng(seed: number) {
@@ -308,7 +312,7 @@ const funds: Fund[] = [
     name: "Small Press & Zines",
     tagline: "Keeping independent publishing weird and affordable.",
     description:
-      "Grants and matching for zines, small presses, translation and community publishing. We match every donor one-for-one up to 50 BREAD per project, so a lot of small gifts go a long way.",
+      "Grants and matching for zines, small presses, translation and community publishing. We match every donor one-for-one up to 50 artUSD per project, so a lot of small gifts go a long way.",
     category: "Publishing",
     curators: ["ana", "maya"],
     proposedBy: "ana",
@@ -344,7 +348,7 @@ const funds: Fund[] = [
     name: "Music Without Labels",
     tagline: "For musicians who'd rather own their work.",
     description:
-      "Independent recordings, archives, instruments and tours. 1.5× multiplier on every BREAD given to a project in an active round.",
+      "Independent recordings, archives, instruments and tours. 1.5× multiplier on every artUSD given to a project in an active round.",
     category: "Music",
     curators: ["bea", "sol"],
     proposedBy: "bea",
@@ -410,7 +414,7 @@ const campaigns: Campaign[] = [
     id: "repair-rebuild",
     fundId: "climate-commons",
     name: "Repair & Rebuild",
-    blurb: "Doubling every BREAD for open tools that keep things out of landfill and power in neighbors' hands.",
+    blurb: "Doubling every artUSD for open tools that keep things out of landfill and power in neighbors' hands.",
     startDay: 35,
     endDay: 63,
     matchingPool: 6000,
@@ -420,7 +424,7 @@ const campaigns: Campaign[] = [
     id: "zine-drive",
     fundId: "small-press",
     name: "Spring Zine Drive",
-    blurb: "A short, sharp round for presses, zines and translations. Every donor matched 1:1 up to 50 BREAD.",
+    blurb: "A short, sharp round for presses, zines and translations. Every donor matched 1:1 up to 50 artUSD.",
     startDay: 38,
     endDay: 52,
     matchingPool: 3000,
@@ -490,13 +494,17 @@ function buildDonations(r: () => number, everyone: User[]): Donation[] {
       for (let i = 0; i < count; i++) {
         const from = donors[Math.floor(r() * donors.length)]
         if (from === creator) continue
+        const amount = AMOUNTS[Math.floor(r() * AMOUNTS.length)]
+        const roll = r()
+        const asset: Asset = roll < 0.75 ? "USD" : roll < 0.9 ? "EUR" : "ETH"
         out.push({
           id: `sd${n++}`,
           from,
           projectId: pid,
           campaignId: c.id,
-          amount: AMOUNTS[Math.floor(r() * AMOUNTS.length)],
-          currency: "BREAD",
+          amount,
+          asset,
+          units: amount / ASSETS[asset].usd,
           day: c.startDay + Math.floor(r() * (last - c.startDay + 1)),
         })
       }
@@ -571,21 +579,33 @@ export function buildSeed(): State {
     { id: "fd6", from: "oli", fundId: "artizen-rescue", campaignId: "lifeboat", amount: 1000, day: 31 },
   ]
 
-  const apy = 0.045
-  const otherSupply = 2_400_000
+  // Art tokens other members hold, and permanent endowments, in units of each asset.
+  const supply: Record<Asset, number> = { USD: 1_650_000, EUR: 420_000, ETH: 95 }
+  const endowments: Endowment[] = [
+    { id: "se1", userId: "oli", asset: "USD", units: 6_000, usd: 6_000, day: 12 },
+    { id: "se2", userId: "noor", asset: "ETH", units: 2, usd: 2 * ASSETS.ETH.usd, day: 18 },
+    { id: "se3", userId: "ines", asset: "EUR", units: 2_500, usd: 2_500 * ASSETS.EUR.usd, day: 26 },
+    { id: "se4", userId: "maya", asset: "USD", units: 1_000, usd: 1_000, day: 33 },
+  ]
+  const endowed = zero()
+  for (const e of endowments) {
+    endowed[e.asset] += e.units
+    points.push({ id: `pe-${e.id}`, userId: e.userId, amount: e.usd * 100, reason: "endow", note: "Endowed the Wealth Fund", day: e.day })
+  }
+  const perDay = ASSET_IDS.reduce((t, a) => t + ((supply[a] + endowed[a]) * ASSETS[a].usd * ASSETS[a].apy) / 365, 0)
   return {
     version: STATE_VERSION,
     day: SEED_DAY,
     season: 2,
     seasonStartDay: 30,
     seasonLength: 30,
-    apy,
-    otherSupply,
-    yieldPool: (otherSupply * apy * (SEED_DAY - 30)) / 365,
-    yieldLifetime: (otherSupply * apy * SEED_DAY) / 365,
+    supply,
+    endowed,
+    yieldPool: perDay * (SEED_DAY - 30),
+    yieldLifetime: perDay * SEED_DAY,
     me: {
-      usdc: START_USDC,
-      bread: START_BREAD,
+      base: { ...START_BASE },
+      art: { ...START_ART },
       onboarded: false,
       referralCode: "",
       yieldGenerated: 0,
@@ -599,12 +619,13 @@ export function buildSeed(): State {
     fundDonations,
     points,
     pointGifts,
+    endowments,
     activity,
     distributions: [
       {
         season: 1,
         day: 30,
-        total: (otherSupply * apy * 30) / 365,
+        total: perDay * 30,
         shares: {
           "artizen-rescue": 3400,
           "climate-commons": 1900,

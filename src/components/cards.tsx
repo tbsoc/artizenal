@@ -130,7 +130,7 @@ export function FundCard({ fund }: { fund: Fund }) {
                 <div className="mb-1 flex justify-between text-muted-foreground">
                   <span>Pledged</span>
                   <span>
-                    {num(pledged)} / {num(fund.pledgeGoal)} BREAD
+                    {num(pledged)} / {num(fund.pledgeGoal)} artUSD
                   </span>
                 </div>
                 <Progress value={(pledged / fund.pledgeGoal) * 100} />

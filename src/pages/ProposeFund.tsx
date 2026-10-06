@@ -66,7 +66,7 @@ export function ProposeFund() {
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px] lg:gap-10">
       <div>
         <h1 className="font-display text-3xl font-semibold md:text-[40px] tracking-tight">Propose a fund</h1>
-        <p className="mt-1 text-muted-foreground">Launches once it hits its BREAD and points goals.</p>
+        <p className="mt-1 text-muted-foreground">Launches once it hits its artUSD and points goals.</p>
         <div className="mt-8 space-y-6">
           <Card className="space-y-5 p-6">
             <Field label="Fund name">
@@ -106,7 +106,7 @@ export function ProposeFund() {
             </div>
             {type === "match" && (
               <div className="mt-4 w-full sm:w-64">
-                <Field label="Cap per donor per project (BREAD)">
+                <Field label="Cap per donor per project (artUSD)">
                   <Input type="number" value={cap} onChange={(e) => setCap(Math.max(1, Number(e.target.value)))} />
                 </Field>
               </div>
@@ -129,17 +129,17 @@ export function ProposeFund() {
           <Card className="p-6">
             <div className="text-sm font-semibold">Launch conditions</div>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <Field label="Pledge goal (BREAD)">
+              <Field label="Pledge goal (artUSD)">
                 <Input type="number" value={pledgeGoal} onChange={(e) => setPledgeGoal(Math.max(0, Number(e.target.value)))} />
               </Field>
               <Field label="Points goal">
                 <Input type="number" value={backingGoal} onChange={(e) => setBackingGoal(Math.max(0, Number(e.target.value)))} />
               </Field>
-              <Field label="Your own pledge (BREAD)" hint={`Earns ${POINT_RULES.perFundBread} pts per BREAD`}>
+              <Field label="Your own pledge (artUSD)" hint={`Earns ${POINT_RULES.perFundBread} pts per artUSD`}>
                 <Input type="number" value={initialPledge} onChange={(e) => setInitialPledge(Math.max(0, Number(e.target.value)))} />
               </Field>
             </div>
-            {initialPledge > state.me.bread && (
+            {initialPledge > state.me.art.USD && (
               <div className="mt-4">
                 <QuickBake need={initialPledge} />
               </div>
@@ -165,7 +165,7 @@ export function ProposeFund() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Needs</span>
                   <span className="font-medium">
-                    {num(pledgeGoal)} BREAD + {num(backingGoal)} pts
+                    {num(pledgeGoal)} artUSD + {num(backingGoal)} pts
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -180,7 +180,7 @@ export function ProposeFund() {
               <Sparkles size={15} /> +{num(POINT_RULES.proposeFund + initialPledge * POINT_RULES.perFundBread)} points
             </div>
             <div className="mt-1 text-muted-foreground">for proposing and pledging. You'll be the fund's first curator.</div>
-            <Button size="lg" className="mt-4 w-full" disabled={!name.trim() || !tagline.trim() || initialPledge > state.me.bread} onClick={submit}>
+            <Button size="lg" className="mt-4 w-full" disabled={!name.trim() || !tagline.trim() || initialPledge > state.me.art.USD} onClick={submit}>
               Propose fund
             </Button>
           </Card>

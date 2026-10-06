@@ -267,7 +267,7 @@ export function ProjectPage({ id }: { id: string }) {
               <div>
                 <div className="font-semibold text-foreground">
                   {project.deposit.status === "held"
-                    ? `${project.deposit.amount} BREAD spam deposit held`
+                    ? `${project.deposit.amount} artUSD spam deposit held`
                     : project.deposit.status === "refunded"
                       ? "Spam deposit returned"
                       : "Deposit forfeited to the commons"}

@@ -14,12 +14,13 @@ const TIERS = [
 ]
 
 const EARN = [
-  { icon: HandCoins, title: "Back a project with BREAD", value: `${POINT_RULES.perBread} per BREAD`, note: "Matched" },
-  { icon: Landmark, title: "Give to a fund", value: `${POINT_RULES.perFundBread} per BREAD`, note: "Double points" },
+  { icon: HandCoins, title: "Back a project with artUSD", value: `${POINT_RULES.perBread} per artUSD`, note: "Matched" },
+  { icon: Landmark, title: "Give to a fund", value: `${POINT_RULES.perFundBread} per artUSD`, note: "Double points" },
   { icon: UserPlus, title: "Invite a friend", value: `${POINT_RULES.referral} + 10%`, note: "Plus 10% of theirs" },
   { icon: Star, title: "Be an early backer", value: `+${POINT_RULES.earlyBacker}`, note: `First ${POINT_RULES.earlyBackerSlots} donors` },
-  { icon: Sprout, title: "Hold BREAD", value: "1 per 10 / day", note: "Daily" },
+  { icon: Sprout, title: "Hold artUSD", value: "1 per 10 / day", note: "Daily" },
   { icon: Rocket, title: "Launch a project", value: `+${POINT_RULES.createProject}`, note: "One time" },
+  { icon: Landmark, title: "Endow the Wealth Fund", value: `${POINT_RULES.perEndowedUsd} per $1`, note: "Permanent" },
   { icon: History, title: "Artizen alumni", value: `+${num(POINT_RULES.artizenAlumni)}`, note: "One time" },
   { icon: Vote, title: "Curate", value: `+${POINT_RULES.proposeFund} / +${POINT_RULES.curate}`, note: "Propose a fund / run a round" },
 ]
@@ -31,11 +32,12 @@ const REASON_LABEL: Record<string, string> = {
   "donate-bread": "Donation",
   "donate-fund": "Fund gift",
   "early-backer": "Early backer",
-  holding: "Holding BREAD",
+  holding: "Holding artUSD",
   "create-project": "New project",
   "artizen-alumni": "Artizen alumni",
   "propose-fund": "Proposed fund",
   curate: "Curation",
+  endow: "Endowment",
   seed: "Earlier activity",
 }
 

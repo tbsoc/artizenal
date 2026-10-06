@@ -1,21 +1,21 @@
 import { Card, LinkButton, SectionTitle, Loaf } from "@/components/ui"
 import { MECHANISM_INFO } from "@/lib/matching"
-import { POINT_RULES, useStore } from "@/lib/store"
+import { POINT_RULES, blendedApy, useStore } from "@/lib/store"
 import { PROJECT_DEPOSIT, PROPOSE_MIN_POINTS } from "@/lib/seed"
 import { num } from "@/lib/utils"
 
 const QA: { q: string; a: string }[] = [
   {
-    q: "What is BREAD?",
-    a: "The Bread Cooperative's community currency. Created from USDC 1:1, redeemable any time.",
+    q: "What are artUSD, artEUR and artETH?",
+    a: "Art tokens built on the Bread Cooperative stack. Each is created 1:1 from USDC, EURC or ETH and can be redeemed any time.",
   },
   {
     q: "Where does the matching money come from?",
-    a: "Interest on the USDC behind BREAD. Each season it's split between funds. Principal is never spent.",
+    a: "The Artizenal Wealth Fund: everything behind the art tokens, plus permanent endowments. Its savings and staking yield is split between funds each season. Principal is never spent.",
   },
   {
-    q: "Why donate in BREAD?",
-    a: "BREAD earns the yield that pays for matching, so every gift keeps the loop going.",
+    q: "What does endowing mean?",
+    a: `Giving USDC, EURC or ETH to the Wealth Fund for good. It earns yield for matching forever, and you get ${POINT_RULES.perEndowedUsd} points per $1 to steer it.`,
   },
   {
     q: "What are points for?",
@@ -23,7 +23,7 @@ const QA: { q: string; a: string }[] = [
   },
   {
     q: "Why is there a deposit to create a project?",
-    a: `To keep spam out. ${PROJECT_DEPOSIT} BREAD, returned after 3 backers or 14 days.`,
+    a: `To keep spam out. ${PROJECT_DEPOSIT} artUSD, returned after 3 backers or 14 days.`,
   },
   {
     q: "I was on Artizen. What happens to my project?",
@@ -42,7 +42,7 @@ export function How() {
       <div className="text-center">
         <Loaf size={48} className="mx-auto" />
         <h1 className="mt-4 font-display text-3xl leading-tight md:text-[48px] font-semibold tracking-tight">How Artizenal works</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-lg text-muted-foreground">Holding BREAD pays for matching. Members decide where it goes.</p>
+        <p className="mx-auto mt-3 max-w-2xl text-lg text-muted-foreground">Holding artUSD pays for matching. Members decide where it goes.</p>
       </div>
 
       <Card className="p-8">
@@ -53,11 +53,11 @@ export function How() {
             </marker>
           </defs>
           {[
-            { x: 10, label: "Members", sub: "convert USDC to BREAD" },
-            { x: 175, label: "Reserves", sub: `earn ~${(state.apy * 100).toFixed(1)}% a year` },
+            { x: 10, label: "Members", sub: "hold or endow" },
+            { x: 175, label: "Wealth Fund", sub: `earn ~${(blendedApy(state) * 100).toFixed(1)}% a year` },
             { x: 340, label: "Yield pool", sub: "builds up each season" },
             { x: 505, label: "Funds", sub: "share = points ratio" },
-            { x: 670, label: "Rounds", sub: "match BREAD gifts" },
+            { x: 670, label: "Rounds", sub: "match artUSD gifts" },
           ].map((b, i) => (
             <g key={b.label}>
               <rect x={b.x} y={40} width={140} height={74} rx={16} fill={i === 2 ? "var(--community)" : "var(--card)"} stroke="var(--border)" />
@@ -72,7 +72,7 @@ export function How() {
           ))}
           <path d="M740 118 C 740 200, 80 200, 80 118" fill="none" stroke="var(--crust)" strokeWidth="1.5" strokeDasharray="5 5" markerEnd="url(#ar)" />
           <text x={410} y={186} textAnchor="middle" fontSize="12" fill="var(--muted-foreground)">
-            Members donate BREAD to projects → matched → projects grow → more members join
+            Members donate artUSD to projects → matched → projects grow → more members join
           </text>
           <path d="M575 118 C 575 150, 470 150, 430 150" fill="none" stroke="var(--coop-ink)" strokeWidth="1.5" />
           <text x={575} y={22} textAnchor="middle" fontSize="12" fontWeight="600" fill="var(--coop-ink)">

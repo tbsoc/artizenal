@@ -3,8 +3,8 @@ import { ArtizenBadge, Avatar, Card, LinkButton, LiveYield, Loaf, SectionTitle }
 import { CampaignRow, FundCard, ProjectCard } from "@/components/cards"
 import { Cover } from "@/components/Cover"
 import { START_USDC } from "@/lib/seed"
-import { ME, campaignStatus, dailyYield, getUser, totalSupply, useStore } from "@/lib/store"
-import { compact, cn, dayLabel, usd } from "@/lib/utils"
+import { ME, blendedApy, campaignStatus, dailyYield, getUser, totalSupply, useStore } from "@/lib/store"
+import { cn, dayLabel, usd } from "@/lib/utils"
 
 function MatchingPool() {
   const { state } = useStore()
@@ -14,8 +14,8 @@ function MatchingPool() {
     state.fundDonations.filter((d) => d.day >= state.seasonStartDay).reduce((a, d) => a + d.amount, 0)
   const stats = [
     { label: "Donated this season", value: usd(donated) },
-    { label: "BREAD in circulation", value: compact(totalSupply(state)) },
-    { label: "Interest (APY)", value: `${(state.apy * 100).toFixed(1)}%` },
+    { label: "Wealth Fund", value: usd(totalSupply(state)) },
+    { label: "Blended APY", value: `${(blendedApy(state) * 100).toFixed(1)}%` },
   ]
   return (
     <Card className="grid grid-cols-1 gap-6 p-6 md:p-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_auto] lg:items-center lg:gap-10">
@@ -34,9 +34,14 @@ function MatchingPool() {
           </div>
         ))}
       </div>
-      <LinkButton href="#/wallet" size="lg" className="w-full lg:w-auto">
-        <Loaf size={16} /> Create BREAD
-      </LinkButton>
+      <div className="flex flex-col gap-2">
+        <LinkButton href="#/wallet" size="lg" className="w-full lg:w-auto">
+          <Loaf size={16} /> Create art tokens
+        </LinkButton>
+        <LinkButton href="#/wealth" size="sm" variant="ghost" className="w-full lg:w-auto">
+          Endow the Wealth Fund
+        </LinkButton>
+      </div>
     </Card>
   )
 }
@@ -44,7 +49,7 @@ function MatchingPool() {
 function Checklist() {
   const { state, actions } = useStore()
   const steps = [
-    { done: state.me.usdc < START_USDC, label: "Get BREAD", href: "#/wallet" },
+    { done: state.me.base.USD < START_USDC, label: "Get art tokens", href: "#/wallet" },
     { done: state.donations.some((d) => d.from === ME && d.campaignId), label: "Back a project", href: "#/f/artizen-rescue" },
     { done: state.pointGifts.some((g) => g.userId === ME), label: "Give points", href: "#/allocate" },
     { done: state.users.some((u) => u.referredBy === ME), label: "Invite a friend", href: "#/points" },
@@ -85,10 +90,10 @@ function Checklist() {
 }
 
 const FLOW = [
-  { icon: Landmark, title: "Hold BREAD", text: "Convert USDC 1:1. Redeem any time." },
-  { icon: Sprout, title: "Reserves earn", text: "The USDC behind BREAD earns interest." },
+  { icon: Landmark, title: "Hold or endow", text: "artUSD, artEUR or artETH, 1:1. Or give principal for good." },
+  { icon: Sprout, title: "Wealth Fund earns", text: "Savings and staking yield on all of it." },
   { icon: Vote, title: "Points split it", text: "Funds get yield in proportion to points given." },
-  { icon: HandCoins, title: "Rounds match", text: "Funds match BREAD donations to projects." },
+  { icon: HandCoins, title: "Rounds match", text: "Funds match artUSD donations to projects." },
 ]
 
 export function Home() {

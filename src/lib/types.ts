@@ -1,3 +1,5 @@
+import type { Asset } from "./assets"
+
 export type Category =
   | "Art"
   | "Music"
@@ -66,9 +68,9 @@ export interface Fund {
   proposedBy: string
   mechanism: Mechanism
   status: FundStatus
-  reserve: number // unassigned BREAD held by the fund
+  reserve: number // unassigned artUSD held by the fund
   autoStream: boolean // route yield share straight into live campaigns
-  pledgeGoal: number // proposed funds: BREAD needed to launch
+  pledgeGoal: number // proposed funds: artUSD needed to launch
   backingGoal: number // proposed funds: points needed to launch
   coverSeed: number
   createdDay: number
@@ -86,15 +88,24 @@ export interface Campaign {
   settled?: Record<string, number> // projectId -> match paid out
 }
 
-export type Currency = "BREAD"
-
 export interface Donation {
   id: string
   from: string
   projectId: string
   campaignId?: string
-  amount: number
-  currency: Currency
+  amount: number // dollar value; matching and totals use this
+  asset: Asset
+  units: number // amount in the art token actually given
+  day: number
+}
+
+/** A permanent gift of principal to the Artizenal Wealth Fund. */
+export interface Endowment {
+  id: string
+  userId: string
+  asset: Asset
+  units: number
+  usd: number
   day: number
 }
 
@@ -119,6 +130,7 @@ export type PointsReason =
   | "artizen-alumni"
   | "propose-fund"
   | "curate"
+  | "endow"
   | "seed"
 
 export interface PointsEvent {
@@ -163,8 +175,8 @@ export interface CartItem {
 }
 
 export interface Me {
-  usdc: number
-  bread: number
+  base: Record<Asset, number> // USDC, EURC, ETH
+  art: Record<Asset, number> // artUSD, artEUR, artETH
   onboarded: boolean
   referralCode: string
   yieldGenerated: number
@@ -178,8 +190,8 @@ export interface State {
   season: number
   seasonStartDay: number
   seasonLength: number
-  apy: number
-  otherSupply: number
+  supply: Record<Asset, number> // art tokens held by other members (redeemable)
+  endowed: Record<Asset, number> // permanent principal from everyone, in units
   yieldPool: number
   yieldLifetime: number
   me: Me
@@ -191,6 +203,7 @@ export interface State {
   fundDonations: FundDonation[]
   points: PointsEvent[]
   pointGifts: PointGift[]
+  endowments: Endowment[]
   activity: Activity[]
   distributions: Distribution[]
   cart: CartItem[]
