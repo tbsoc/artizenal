@@ -1,64 +1,40 @@
-import { useState } from "react"
-import { RotateCcw } from "lucide-react"
-import { Badge, Bread, Button, Card, Pts, SectionTitle, Stat, Stepper, MechanismBadge, PointsTabs } from "@/components/ui"
+import { Badge, Bread, Card, LiveYield, Pts, SectionTitle, Stat, MechanismBadge, PointsTabs } from "@/components/ui"
 import { Cover } from "@/components/Cover"
 import { ME, dailyYield, fundTotalPoints, getFund, pointsBalance, seasonRatios, useStore } from "@/lib/store"
-import { cn, num } from "@/lib/utils"
+import { num } from "@/lib/utils"
 
 const BAR_COLORS = ["#d9762b", "#2f8f6b", "#3d5a99", "#b5466b", "#8a6d2b", "#6b4ea0", "#2a8d9d", "#a05a2c"]
 
-/** Split `total` points across funds in proportion to `weights`, in whole points. */
-function splitByRatio(total: number, weights: Record<string, number>) {
-  const entries = Object.entries(weights).filter(([, w]) => w > 0)
-  const sum = entries.reduce((a, [, w]) => a + w, 0)
-  const out: Record<string, number> = {}
-  if (!sum || total <= 0) return out
-  let used = 0
-  for (const [fid, w] of entries) {
-    out[fid] = Math.floor((total * w) / sum)
-    used += out[fid]
-  }
-  const top = entries.sort((a, b) => b[1] - a[1])[0][0]
-  out[top] += total - used
-  return out
-}
+const PRESETS = [10, 100, 1000]
 
 export function Allocate() {
   const { state, actions, toast } = useStore()
   const balance = pointsBalance(state, ME)
-  const [weights, setWeights] = useState<Record<string, number>>({})
-  const [budget, setBudget] = useState(Math.floor(balance / 10) * 10)
-  const toGive = Math.min(budget, balance)
-  const draft = splitByRatio(toGive, weights)
-  const drafted = Object.values(draft).reduce((a, b) => a + b, 0)
-  const weightTotal = Object.values(weights).reduce((a, b) => a + b, 0)
 
   const active = state.funds.filter((f) => f.status === "active")
   const proposed = state.funds.filter((f) => f.status === "proposed")
   const now = seasonRatios(state)
-  const after = seasonRatios(state, draft)
+  const after = now
   const daysLeft = state.seasonLength - (state.day - state.seasonStartDay)
   const seasonEstimate = state.yieldPool + dailyYield(state) * daysLeft
   const myGifts = state.pointGifts.filter((g) => g.userId === ME && g.season === state.season).reverse()
 
   const colorOf = (fid: string) => BAR_COLORS[state.funds.findIndex((f) => f.id === fid) % BAR_COLORS.length]
 
-  const give = () => {
-    const r = actions.givePoints(draft)
+  const give = (fid: string, amount: number) => {
+    const r = actions.givePoints({ [fid]: amount })
     if (!r.ok) return toast(r.error, "err")
-    toast(`Gave ${num(drafted)} points. The split for season ${state.season} has been updated.`)
-    setWeights({})
-    setBudget(Math.floor((balance - drafted) / 10) * 10)
+    toast(`+${num(amount)} points to ${getFund(state, fid)?.name}`)
   }
 
   const row = (fid: string) => {
     const f = getFund(state, fid)!
     const isActive = f.status === "active"
-    const mine = draft[fid] ?? 0
-    const w = weights[fid] ?? 0
-    const delta = isActive ? after.ratio[fid] - now.ratio[fid] : 0
+    const mine = state.pointGifts
+      .filter((g) => g.userId === ME && g.fundId === fid && (!isActive || g.season === state.season))
+      .reduce((a, g) => a + g.amount, 0)
     return (
-      <div key={fid} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 px-4 py-4 md:grid-cols-[minmax(0,1.4fr)_120px_minmax(0,1.5fr)_130px] md:gap-5 md:px-5">
+      <div key={fid} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 px-4 py-4 md:grid-cols-[minmax(0,1.4fr)_120px_auto_130px] md:gap-5 md:px-5">
         <a href={`#/f/${fid}`} className="flex min-w-0 items-center gap-3">
           <div className="relative h-11 w-14 shrink-0 overflow-hidden rounded-lg">
             <Cover seed={f.coverSeed} />
@@ -88,23 +64,29 @@ export function Allocate() {
             </>
           )}
         </div>
-        <div className="flex items-center gap-4">
-          <Stepper value={w} onChange={(v) => setWeights({ ...weights, [fid]: v })} label={`${f.name} ratio`} />
-          <div className="text-xs leading-tight">
-            <div className={cn("font-semibold tabular-nums", w ? "text-foreground" : "text-muted-foreground")}>{weightTotal ? Math.round((w / weightTotal) * 100) : 0}%</div>
-            <div className="text-muted-foreground tabular-nums">{num(mine)} pts</div>
+        <div>
+          <div className="flex gap-1.5">
+            {PRESETS.map((amt) => (
+              <button
+                key={amt}
+                onClick={() => give(fid, amt)}
+                disabled={amt > balance}
+                className="h-9 min-w-14 rounded-full border border-border bg-card px-3 text-sm font-semibold tabular-nums transition hover:border-coop-ink hover:bg-coop-ink hover:text-white disabled:pointer-events-none disabled:opacity-35 cursor-pointer"
+              >
+                +{num(amt)}
+              </button>
+            ))}
           </div>
+          {mine > 0 && <div className="mt-1 text-xs text-muted-foreground">You gave {num(mine)}</div>}
         </div>
         <div className="text-right">
           {isActive ? (
             <>
               <div className="font-semibold tabular-nums">{(after.ratio[fid] * 100).toFixed(1)}%</div>
-              <div className={cn("text-xs tabular-nums", delta > 0.0005 ? "text-community" : "text-muted-foreground")}>
-                {delta > 0.0005 ? `+${(delta * 100).toFixed(1)} from you` : `≈ ${num(seasonEstimate * after.ratio[fid])} BREAD`}
-              </div>
+              <div className="text-xs text-muted-foreground tabular-nums">≈ {num(seasonEstimate * after.ratio[fid])} BREAD</div>
             </>
           ) : (
-            <div className="text-xs text-muted-foreground">{mine > 0 ? `${num(fundTotalPoints(state, fid) + mine)} after your gift` : "Counts toward launch"}</div>
+            <div className="text-xs text-muted-foreground">{Math.round((fundTotalPoints(state, fid) / f.backingGoal) * 100)}% to launch</div>
           )}
         </div>
       </div>
@@ -125,17 +107,9 @@ export function Allocate() {
         <Card className="flex items-center gap-6 p-6 md:col-span-2 md:gap-8">
           <div>
             <div className="text-xs text-muted-foreground">Season {state.season} yield so far</div>
-            <Bread value={state.yieldPool} className="mt-1 font-display text-4xl leading-none md:text-[42px] font-semibold text-community" />
+            <LiveYield base={state.yieldPool} perDay={dailyYield(state)} className="mt-1 font-display text-4xl leading-none font-semibold text-community md:text-[42px]" />
             <div className="mt-2 text-xs text-muted-foreground">
               ≈ {num(seasonEstimate)} by season end · {daysLeft} days left
-            </div>
-          </div>
-          <div className="flex-1">
-            <div className="flex h-24 items-end gap-1">
-              {Array.from({ length: state.seasonLength }, (_, i) => {
-                const done = i < state.day - state.seasonStartDay
-                return <div key={i} className={cn("flex-1 rounded-sm", done ? "bg-community" : "bg-muted")} style={{ height: `${20 + (i / state.seasonLength) * 80}%` }} />
-              })}
             </div>
           </div>
         </Card>
@@ -153,27 +127,11 @@ export function Allocate() {
                 You have <Pts value={balance} className="font-semibold text-foreground" /> to give
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setWeights({})} disabled={!weightTotal}>
-                <RotateCcw size={14} /> Clear
-              </Button>
-              <Button size="sm" disabled={!drafted} onClick={give}>
-                Give {drafted ? num(drafted) : ""} points
-              </Button>
-            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-4 md:gap-4 md:px-5">
-            <div className="text-sm font-semibold">Amount</div>
-            <Stepper value={toGive} onChange={setBudget} step={50} max={balance} label="Points to give" />
-            <Button variant="outline" size="sm" onClick={() => setBudget(balance)} disabled={toGive === balance}>
-              All
-            </Button>
-            <div className="ml-auto text-xs text-muted-foreground">Set a ratio with − and +</div>
-          </div>
-          <div className="hidden grid-cols-[minmax(0,1.4fr)_120px_minmax(0,1.5fr)_130px] gap-5 px-5 pt-4 text-xs md:grid font-semibold tracking-wide text-muted-foreground uppercase">
+          <div className="hidden grid-cols-[minmax(0,1.4fr)_120px_auto_130px] gap-5 px-5 pt-4 text-xs md:grid font-semibold tracking-wide text-muted-foreground uppercase">
             <div>Active funds</div>
             <div className="text-right">Points</div>
-            <div>Your ratio</div>
+            <div>Give</div>
             <div className="text-right">Share of yield</div>
           </div>
           <div className="divide-y divide-border">{active.map((f) => row(f.id))}</div>
@@ -194,7 +152,7 @@ export function Allocate() {
 
         <div className="space-y-4">
           <Card className="p-5">
-            <div className="text-sm font-semibold">Season {state.season} split{drafted > 0 && " (with your gift)"}</div>
+            <div className="text-sm font-semibold">Season {state.season} split</div>
             <div className="mt-1 text-xs text-muted-foreground">
               {after.total ? `${num(after.total)} points given` : "No points given yet."}
             </div>

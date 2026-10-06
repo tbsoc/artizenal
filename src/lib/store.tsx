@@ -605,6 +605,12 @@ function useStoreValue() {
         })
       },
 
+      dismissOnboarding() {
+        mutate((s) => {
+          s.me.onboardingDismissed = true
+        })
+      },
+
       toggleAutoStream(fundId: string) {
         mutate((s) => {
           const f = getFund(s, fundId)

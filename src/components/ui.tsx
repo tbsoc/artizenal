@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import type { ReactNode } from "react"
 import { X, Sparkles, History } from "lucide-react"
 import { cn, initials, num } from "@/lib/utils"
@@ -383,3 +383,16 @@ export function PointsTabs({ active }: { active: "give" | "earn" }) {
     </div>
   )
 }
+
+/** Yield accrues every second in reality; tick it up live between simulated days. */
+export function LiveYield({ base, perDay, className }: { base: number; perDay: number; className?: string }) {
+  const [value, setValue] = useState(base)
+  useEffect(() => {
+    const start = Date.now()
+    setValue(base)
+    const id = setInterval(() => setValue(base + ((Date.now() - start) / 1000) * (perDay / 86400)), 100)
+    return () => clearInterval(id)
+  }, [base, perDay])
+  return <Bread value={value} digits={4} className={className} />
+}
+

@@ -15,7 +15,6 @@ import {
   Pts,
   Stat,
   StatusPill,
-  Stepper,
   Textarea,
 } from "@/components/ui"
 import { Cover } from "@/components/Cover"
@@ -41,43 +40,34 @@ import { cn, num } from "@/lib/utils"
 function GivePoints({ fund }: { fund: Fund }) {
   const { state, actions, toast } = useStore()
   const balance = pointsBalance(state, ME)
-  const [val, setVal] = useState(0)
   const mine = state.pointGifts
     .filter((g) => g.userId === ME && g.fundId === fund.id && (fund.status === "proposed" || g.season === state.season))
     .reduce((a, g) => a + g.amount, 0)
-  const ratioAfter = fund.status === "active" ? seasonRatios(state, { [fund.id]: val }).ratio[fund.id] : 0
+  const give = (amount: number) => {
+    const r = actions.givePoints({ [fund.id]: amount })
+    if (!r.ok) return toast(r.error, "err")
+    toast(`+${num(amount)} points to ${fund.name}`)
+  }
   return (
     <div className="rounded-xl bg-coop-ink/5 p-4">
       <div className="flex items-center justify-between text-sm">
         <span className="font-semibold text-coop-ink">Give points</span>
         <span className="text-xs text-muted-foreground">{num(balance)} to give</span>
       </div>
-      <div className="mt-3 flex items-center gap-3">
-        <Stepper value={Math.min(val, balance)} onChange={setVal} step={50} max={Math.max(balance, 0)} label="Points to give" />
-        <button type="button" onClick={() => setVal(balance)} className="text-xs font-semibold text-coop-ink hover:underline cursor-pointer">
-          All
-        </button>
-        <div className="flex-1" />
-        <Button
-          size="sm"
-          variant="dark"
-          disabled={val <= 0}
-          onClick={() => {
-            const r = actions.givePoints({ [fund.id]: val })
-            if (!r.ok) return toast(r.error, "err")
-            toast(`Gave ${num(val)} points to ${fund.name}`)
-            setVal(0)
-          }}
-        >
-          Give
-        </Button>
+      <div className="mt-3 flex gap-1.5">
+        {[10, 100, 1000].map((amt) => (
+          <button
+            key={amt}
+            onClick={() => give(amt)}
+            disabled={amt > balance}
+            className="h-9 flex-1 rounded-full border border-border bg-card text-sm font-semibold tabular-nums transition hover:border-coop-ink hover:bg-coop-ink hover:text-white disabled:pointer-events-none disabled:opacity-35 cursor-pointer"
+          >
+            +{num(amt)}
+          </button>
+        ))}
       </div>
       <div className="mt-2 text-xs text-muted-foreground">
-        {fund.status === "active"
-          ? val > 0
-            ? `This fund's share of the season's yield would become ${(ratioAfter * 100).toFixed(1)}%.`
-            : "Given points are spent."
-          : "Counts toward the launch goal."}
+        {fund.status === "active" ? "Given points are spent." : "Counts toward the launch goal."}
         {mine > 0 && ` You've given ${num(mine)}${fund.status === "active" ? " this season" : ""}.`}
       </div>
     </div>

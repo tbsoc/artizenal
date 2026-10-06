@@ -1,50 +1,52 @@
-import { ArrowRight, Check, Landmark, Sprout, Vote, HandCoins, Sparkles, History } from "lucide-react"
-import { ArtizenBadge, Avatar, Bread, Card, LinkButton, Loaf, SectionTitle } from "@/components/ui"
+import { ArrowRight, Check, X, Landmark, Sprout, Vote, HandCoins, Sparkles, History } from "lucide-react"
+import { ArtizenBadge, Avatar, Bread, Card, LinkButton, LiveYield, Loaf, SectionTitle } from "@/components/ui"
 import { CampaignRow, FundCard, ProjectCard } from "@/components/cards"
 import { Cover } from "@/components/Cover"
 import { START_USDC } from "@/lib/seed"
-import { ME, campaignStatus, getUser, totalSupply, useStore } from "@/lib/store"
-import { compact, cn, dayLabel } from "@/lib/utils"
+import { ME, campaignStatus, dailyYield, getUser, totalSupply, useStore } from "@/lib/store"
+import { compact, cn, dayLabel, usd } from "@/lib/utils"
 
-function Engine() {
+function MatchingPool() {
   const { state } = useStore()
   const live = state.campaigns.filter((c) => campaignStatus(c, state.day) === "live")
   const livePool = live.reduce((a, c) => a + c.matchingPool, 0)
   const left = state.seasonLength - (state.day - state.seasonStartDay)
-  const pct = ((state.day - state.seasonStartDay) / state.seasonLength) * 100
+  const donated =
+    state.donations.filter((d) => d.day >= state.seasonStartDay).reduce((a, d) => a + d.amount, 0) +
+    state.fundDonations.filter((d) => d.day >= state.seasonStartDay).reduce((a, d) => a + d.amount, 0)
+  const stats = [
+    { label: "Donated this season", value: usd(donated) },
+    { label: "Live matching", value: <Bread value={livePool} />, sub: `${live.length} rounds` },
+    { label: "BREAD in circulation", value: compact(totalSupply(state)) },
+    { label: "Interest (APY)", value: `${(state.apy * 100).toFixed(1)}%` },
+  ]
   return (
-    <Card className="relative overflow-hidden p-6">
-      <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Matching pool</div>
-      <div className="mt-4 grid grid-cols-2 gap-5">
-        <div>
-          <div className="text-xs text-muted-foreground">BREAD in circulation</div>
-          <div className="mt-1 font-display text-3xl font-semibold">{compact(totalSupply(state))}</div>
+    <Card className="grid grid-cols-1 gap-6 p-6 md:p-8 lg:grid-cols-[1.1fr_1.6fr_auto] lg:items-center lg:gap-10">
+      <div>
+        <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+          Season {state.season} matching pool · {left} days left
         </div>
-        <div>
-          <div className="text-xs text-muted-foreground">Interest (APY)</div>
-          <div className="mt-1 font-display text-3xl font-semibold">{(state.apy * 100).toFixed(1)}%</div>
-        </div>
+        <LiveYield base={state.yieldPool} perDay={dailyYield(state)} className="mt-2 font-display text-4xl font-semibold text-community md:text-5xl" />
+        <div className="mt-1 text-sm text-muted-foreground">Yield earned so far, growing every second</div>
       </div>
-      <div className="mt-6 rounded-2xl bg-muted p-4">
-        <div className="flex items-baseline justify-between">
-          <div className="text-sm font-semibold">Season {state.season} yield so far</div>
-          <div className="text-xs text-muted-foreground">{left} days left</div>
-        </div>
-        <Bread value={state.yieldPool} className="mt-1 font-display text-4xl font-semibold text-community" />
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-card">
-          <div className="h-full rounded-full bg-community" style={{ width: `${pct}%` }} />
-        </div>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4 lg:border-l lg:border-border lg:pl-10">
+        {stats.map((s) => (
+          <div key={s.label}>
+            <div className="text-xs text-muted-foreground">{s.label}</div>
+            <div className="mt-1 text-xl font-semibold tabular-nums">{s.value}</div>
+            {s.sub && <div className="text-xs text-muted-foreground">{s.sub}</div>}
+          </div>
+        ))}
       </div>
-      <div className="mt-4 flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">Live in {live.length} rounds</span>
-        <Bread value={livePool} className="font-semibold" />
-      </div>
+      <LinkButton href="#/wallet" size="lg" className="w-full lg:w-auto">
+        <Loaf size={16} /> Create BREAD
+      </LinkButton>
     </Card>
   )
 }
 
 function Checklist() {
-  const { state } = useStore()
+  const { state, actions } = useStore()
   const steps = [
     { done: state.me.usdc < START_USDC, label: "Get BREAD", href: "#/wallet" },
     { done: state.donations.some((d) => d.from === ME && d.campaignId), label: "Back a project", href: "#/f/artizen-rescue" },
@@ -53,9 +55,9 @@ function Checklist() {
     { done: state.projects.some((p) => p.creatorId === ME), label: "Start a project", href: "#/new" },
   ]
   const n = steps.filter((s) => s.done).length
-  if (n === steps.length) return null
+  if (state.me.onboardingDismissed || n === steps.length) return null
   return (
-    <Card className="flex flex-col items-start gap-3 px-5 py-4 md:flex-row md:items-center md:gap-6 md:px-6">
+    <Card className="relative flex flex-col items-start gap-3 px-5 py-4 pr-12 md:flex-row md:items-center md:gap-6 md:px-6 md:pr-14">
       <div className="shrink-0">
         <div className="text-sm font-semibold">Onboarding</div>
         <div className="text-xs text-muted-foreground">{n}/{steps.length}</div>
@@ -75,6 +77,13 @@ function Checklist() {
           </a>
         ))}
       </div>
+      <button
+        onClick={actions.dismissOnboarding}
+        className="absolute top-3 right-3 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer md:top-1/2 md:-translate-y-1/2"
+        aria-label="Close onboarding"
+      >
+        <X size={16} />
+      </button>
     </Card>
   )
 }
@@ -97,7 +106,9 @@ export function Home() {
 
   return (
     <div className="space-y-14">
-      <section className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[1.25fr_1fr] lg:gap-8">
+      <div className="space-y-6">
+      <Checklist />
+      <section>
         <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl bg-foreground p-6 text-background md:p-10">
           <div className="absolute inset-0 opacity-25">
             <Cover seed={7} />
@@ -123,10 +134,9 @@ export function Home() {
             </LinkButton>
           </div>
         </div>
-        <Engine />
       </section>
-
-      <Checklist />
+      <MatchingPool />
+      </div>
 
       <section>
         <SectionTitle title="How it works" />

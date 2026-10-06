@@ -169,6 +169,7 @@ export interface Me {
   referralCode: string
   yieldGenerated: number
   holdingCarry: number // fractional holding points not yet awarded
+  onboardingDismissed?: boolean
 }
 
 export interface State {
