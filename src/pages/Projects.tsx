@@ -49,8 +49,8 @@ export function Projects({ query }: { query: URLSearchParams }) {
           </LinkButton>
         }
       />
-      <div className="mb-4 flex items-center gap-3">
-        <div className="relative w-80">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="relative w-full sm:w-80">
           <Search size={16} className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search projects or places" className="pl-10" />
         </div>
@@ -83,7 +83,7 @@ export function Projects({ query }: { query: URLSearchParams }) {
         ))}
       </div>
       {list.length ? (
-        <div className="grid grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {list.map(({ p }) => (
             <ProjectCard key={p.id} project={p} />
           ))}

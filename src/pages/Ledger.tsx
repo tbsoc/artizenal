@@ -177,7 +177,7 @@ export function Ledger() {
         }
       />
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <Card className="p-5">
           <Stat label="Donated to projects" value={<Bread value={sum("donation", "BREAD")} />} sub={`+ ${num(sum("donation", "USDC"))} USDC`} />
         </Card>
@@ -193,8 +193,8 @@ export function Ledger() {
       </div>
 
       <div>
-        <div className="mb-4 flex items-center gap-3">
-          <div className="relative w-72">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div className="relative w-full sm:w-72">
             <Search size={16} className="absolute top-1/2 left-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search names, projects, funds" className="pl-10" />
           </div>
@@ -216,7 +216,8 @@ export function Ledger() {
         </div>
 
         <Card className="overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-muted/40 text-left text-xs text-muted-foreground">
               <tr>
                 <th className="w-16 px-4 py-2.5 font-medium">Day</th>
@@ -252,6 +253,7 @@ export function Ledger() {
               ))}
             </tbody>
           </table>
+          </div>
           {rows.length > limit && (
             <div className="border-t border-border p-3 text-center">
               <Button variant="ghost" size="sm" onClick={() => setLimit((l) => l + 200)}>

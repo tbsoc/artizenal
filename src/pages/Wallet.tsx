@@ -41,7 +41,7 @@ export function Wallet() {
         sub="Convert USDC to BREAD 1:1. While you hold it, its interest pays for matching."
       />
 
-      <div className="grid grid-cols-[1fr_1fr_420px] gap-5">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-[1fr_1fr_420px]">
         <Card className="p-6">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <CircleDollarSign size={16} className="text-coop-ink" /> USDC
@@ -59,7 +59,7 @@ export function Wallet() {
           <Bread value={state.me.bread} digits={2} className="mt-3 font-display text-4xl font-semibold" />
           <div className="mt-1 text-xs text-muted-foreground">Earning for the commons while you hold it</div>
         </Card>
-        <Card className="row-span-2 p-6">
+        <Card className="p-6 md:col-span-2 lg:col-span-1 lg:row-span-2">
           <div className="font-display text-xl font-semibold">Convert</div>
           <div className="mt-4 rounded-2xl border border-border p-4">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -104,7 +104,7 @@ export function Wallet() {
           </Button>
         </Card>
 
-        <Card className="col-span-2 grid grid-cols-2 gap-6 p-6">
+        <Card className="grid grid-cols-1 gap-6 p-6 sm:grid-cols-2 md:col-span-2">
           <div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Sprout size={14} /> Yield you've generated for matching

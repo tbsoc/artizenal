@@ -179,19 +179,19 @@ export function Modal({
   }, [open, onClose])
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 p-6 backdrop-blur-[2px] animate-in" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 p-3 sm:p-6 backdrop-blur-[2px] animate-in" onMouseDown={onClose}>
       <div
         className="relative max-h-[90vh] w-full overflow-y-auto rounded-3xl border border-border bg-card shadow-2xl pop-in"
         style={{ maxWidth: width }}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between bg-card/95 px-6 pt-5 pb-3 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between bg-card/95 px-5 pt-5 pb-3 backdrop-blur sm:px-6">
           <div className="font-display text-xl font-semibold">{title}</div>
           <button onClick={onClose} className="rounded-full p-1.5 text-muted-foreground hover:bg-muted cursor-pointer" aria-label="Close">
             <X size={18} />
           </button>
         </div>
-        <div className="px-6 pb-6">{children}</div>
+        <div className="px-5 pb-6 sm:px-6">{children}</div>
       </div>
     </div>
   )
@@ -302,9 +302,9 @@ export function StatusPill({ status }: { status: CampaignStatus }) {
 
 export function SectionTitle({ title, sub, action }: { title: ReactNode; sub?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-6">
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h2 className="font-display text-[28px] leading-tight font-semibold tracking-tight">{title}</h2>
+        <h2 className="font-display text-2xl leading-tight md:text-[28px] font-semibold tracking-tight">{title}</h2>
         {sub && <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{sub}</p>}
       </div>
       {action}

@@ -63,7 +63,7 @@ export function Points() {
       <SectionTitle title="Points" sub="Earned, never bought. Give them to funds to split the yield." />
       </div>
 
-      <div className="grid grid-cols-[1.2fr_1fr] gap-5">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.2fr_1fr]">
         <Card className="relative overflow-hidden bg-coop-ink p-8 text-white">
           <div className="absolute -right-10 -bottom-16 h-64 w-64 rounded-full bg-white/5" />
           <div className="absolute right-20 -top-20 h-48 w-48 rounded-full bg-white/5" />
@@ -72,7 +72,7 @@ export function Points() {
               <Badge className="bg-white/15 text-white">{tier.name}</Badge>
               <span className="text-sm text-white/70">Rank #{myRank} of {leaderboard.length}</span>
             </div>
-            <div className="mt-4 font-display text-[64px] leading-none font-semibold tabular-nums">{num(balance)}</div>
+            <div className="mt-4 font-display text-5xl leading-none md:text-[64px] font-semibold tabular-nums">{num(balance)}</div>
             <div className="mt-2 text-white/70">
               points to give · {num(pts)} earned all-time · {num(given)} given to funds
             </div>
@@ -156,7 +156,7 @@ export function Points() {
 
       <div>
         <h3 className="mb-4 font-display text-2xl font-semibold">Ways to earn</h3>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {EARN.map((e) => (
             <Card key={e.title} className="flex items-center gap-4 p-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-wheat/30 text-crust">
@@ -172,7 +172,7 @@ export function Points() {
         </div>
       </div>
 
-      <div className="grid grid-cols-[1fr_400px] gap-8">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_400px]">
         <div>
           <h3 className="mb-4 font-display text-2xl font-semibold">Your history</h3>
           <Card className="divide-y divide-border">

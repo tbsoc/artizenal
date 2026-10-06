@@ -41,7 +41,7 @@ export function How() {
     <div className="mx-auto max-w-4xl space-y-12">
       <div className="text-center">
         <Loaf size={48} className="mx-auto" />
-        <h1 className="mt-4 font-display text-[48px] leading-tight font-semibold tracking-tight">How Artizenal works</h1>
+        <h1 className="mt-4 font-display text-3xl leading-tight md:text-[48px] font-semibold tracking-tight">How Artizenal works</h1>
         <p className="mx-auto mt-3 max-w-2xl text-lg text-muted-foreground">Holding BREAD pays for matching. Members decide where it goes.</p>
       </div>
 
@@ -83,7 +83,7 @@ export function How() {
 
       <div>
         <SectionTitle title="Three ways to match" />
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {Object.values(MECHANISM_INFO).map((m) => (
             <Card key={m.name} className="p-5">
               <div className="font-semibold">{m.name}</div>

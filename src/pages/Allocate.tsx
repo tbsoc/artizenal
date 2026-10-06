@@ -58,7 +58,7 @@ export function Allocate() {
     const w = weights[fid] ?? 0
     const delta = isActive ? after.ratio[fid] - now.ratio[fid] : 0
     return (
-      <div key={fid} className="grid grid-cols-[minmax(0,1.4fr)_120px_minmax(0,1.5fr)_130px] items-center gap-5 px-5 py-4">
+      <div key={fid} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-3 px-4 py-4 md:grid-cols-[minmax(0,1.4fr)_120px_minmax(0,1.5fr)_130px] md:gap-5 md:px-5">
         <a href={`#/f/${fid}`} className="flex min-w-0 items-center gap-3">
           <div className="relative h-11 w-14 shrink-0 overflow-hidden rounded-lg">
             <Cover seed={f.coverSeed} />
@@ -121,11 +121,11 @@ export function Allocate() {
       />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="col-span-2 flex items-center gap-8 p-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Card className="flex items-center gap-6 p-6 md:col-span-2 md:gap-8">
           <div>
             <div className="text-xs text-muted-foreground">Season {state.season} yield so far</div>
-            <Bread value={state.yieldPool} className="mt-1 font-display text-[42px] leading-none font-semibold text-community" />
+            <Bread value={state.yieldPool} className="mt-1 font-display text-4xl leading-none md:text-[42px] font-semibold text-community" />
             <div className="mt-2 text-xs text-muted-foreground">
               ≈ {num(seasonEstimate)} by season end · {daysLeft} days left
             </div>
@@ -144,9 +144,9 @@ export function Allocate() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-[1fr_360px] gap-8">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
         <Card className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-border bg-muted/40 px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/40 px-4 py-4 md:px-5">
             <div>
               <div className="font-semibold">Give points</div>
               <div className="text-sm text-muted-foreground">
@@ -162,7 +162,7 @@ export function Allocate() {
               </Button>
             </div>
           </div>
-          <div className="flex items-center gap-4 border-b border-border px-5 py-4">
+          <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-4 md:gap-4 md:px-5">
             <div className="text-sm font-semibold">Amount</div>
             <Stepper value={toGive} onChange={setBudget} step={50} max={balance} label="Points to give" />
             <Button variant="outline" size="sm" onClick={() => setBudget(balance)} disabled={toGive === balance}>
@@ -170,7 +170,7 @@ export function Allocate() {
             </Button>
             <div className="ml-auto text-xs text-muted-foreground">Set a ratio with − and +</div>
           </div>
-          <div className="grid grid-cols-[minmax(0,1.4fr)_120px_minmax(0,1.5fr)_130px] gap-5 px-5 pt-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <div className="hidden grid-cols-[minmax(0,1.4fr)_120px_minmax(0,1.5fr)_130px] gap-5 px-5 pt-4 text-xs md:grid font-semibold tracking-wide text-muted-foreground uppercase">
             <div>Active funds</div>
             <div className="text-right">Points</div>
             <div>Your ratio</div>
@@ -239,7 +239,8 @@ export function Allocate() {
       <div>
         <h3 className="mb-4 font-display text-2xl font-semibold">Past seasons</h3>
         <Card className="overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-muted/40 text-left text-xs text-muted-foreground">
               <tr>
                 <th className="px-5 py-2.5 font-medium">Season</th>
@@ -277,6 +278,7 @@ export function Allocate() {
               ))}
             </tbody>
           </table>
+          </div>
         </Card>
       </div>
     </div>

@@ -54,7 +54,7 @@ export function ProjectPage({ id }: { id: string }) {
       <a href="#/projects" className="mb-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft size={15} /> All projects
       </a>
-      <div className="grid grid-cols-[1fr_380px] gap-10">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px] lg:gap-10">
         <div className="min-w-0">
           <div className="relative aspect-[16/8] overflow-hidden rounded-3xl bg-muted">
             <Cover seed={project.coverSeed} image={project.image} />
@@ -73,9 +73,9 @@ export function ProjectPage({ id }: { id: string }) {
               </Badge>
             )}
           </div>
-          <h1 className="mt-3 font-display text-[44px] leading-tight font-semibold tracking-tight">{project.title}</h1>
+          <h1 className="mt-3 font-display text-3xl leading-tight md:text-[44px] font-semibold tracking-tight">{project.title}</h1>
           <p className="mt-2 text-lg text-muted-foreground">{project.tagline}</p>
-          <div className="mt-5 flex items-center gap-5 text-sm">
+          <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm">
             <div className="flex items-center gap-2">
               <Avatar user={creator} size={30} />
               <div>

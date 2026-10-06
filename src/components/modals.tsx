@@ -133,7 +133,7 @@ export function DonateModal({
 
           <div>
             <div className="mb-2 text-sm font-semibold">Amount</div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {PRESETS.map((p) => (
                 <button
                   key={p}
@@ -151,7 +151,7 @@ export function DonateModal({
                 min={1}
                 value={amount || ""}
                 onChange={(e) => setAmount(Math.max(0, Number(e.target.value)))}
-                className="h-10 w-28"
+                className="h-10 w-full sm:w-28"
                 aria-label="Custom amount"
               />
             </div>
@@ -236,7 +236,7 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
             : "Becomes matching money for the fund's rounds."}{" "}
           <b className="text-coop-ink">{POINT_RULES.perFundBread} points per BREAD.</b>
         </p>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {[25, 50, 100, 250, 500].map((p) => (
             <button
               key={p}
@@ -249,7 +249,7 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
               {p}
             </button>
           ))}
-          <Input type="number" value={amount || ""} onChange={(e) => setAmount(Math.max(0, Number(e.target.value)))} className="h-10 w-28" />
+          <Input type="number" value={amount || ""} onChange={(e) => setAmount(Math.max(0, Number(e.target.value)))} className="h-10 w-full sm:w-28" />
         </div>
         {!proposed && (
           <Field label="To">
@@ -295,7 +295,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
   if (!open) return null
   return (
     <div className="fixed inset-0 z-40 flex justify-end bg-foreground/30 animate-in" onMouseDown={onClose}>
-      <div className="slide-in flex h-full w-[460px] flex-col bg-card shadow-2xl" onMouseDown={(e) => e.stopPropagation()}>
+      <div className="slide-in flex h-full w-full flex-col sm:w-[460px] bg-card shadow-2xl" onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
           <div>
             <div className="font-display text-2xl font-semibold">Your basket</div>

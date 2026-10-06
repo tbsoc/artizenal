@@ -63,9 +63,9 @@ export function ProposeFund() {
   ]
 
   return (
-    <div className="grid grid-cols-[1fr_380px] gap-10">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px] lg:gap-10">
       <div>
-        <h1 className="font-display text-[40px] font-semibold tracking-tight">Propose a fund</h1>
+        <h1 className="font-display text-3xl font-semibold md:text-[40px] tracking-tight">Propose a fund</h1>
         <p className="mt-1 text-muted-foreground">Launches once it hits its BREAD and points goals.</p>
         <div className="mt-8 space-y-6">
           <Card className="space-y-5 p-6">
@@ -75,7 +75,7 @@ export function ProposeFund() {
             <Field label="Tagline">
               <Input value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="What kind of work will it support?" />
             </Field>
-            <div className="grid grid-cols-[200px_1fr] gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-[200px_1fr]">
               <Field label="Category">
                 <Select value={category} onChange={(e) => setCategory(e.target.value as Category)}>
                   {CATEGORIES.map((c) => (
@@ -91,7 +91,7 @@ export function ProposeFund() {
 
           <Card className="p-6">
             <div className="text-sm font-semibold">Matching formula</div>
-            <div className="mt-3 grid grid-cols-3 gap-3">
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {MECHS.map((m) => (
                 <button
                   key={m.id}
@@ -105,14 +105,14 @@ export function ProposeFund() {
               ))}
             </div>
             {type === "match" && (
-              <div className="mt-4 w-64">
+              <div className="mt-4 w-full sm:w-64">
                 <Field label="Cap per donor per project (BREAD)">
                   <Input type="number" value={cap} onChange={(e) => setCap(Math.max(1, Number(e.target.value)))} />
                 </Field>
               </div>
             )}
             {type === "multiplier" && (
-              <div className="mt-4 w-64">
+              <div className="mt-4 w-full sm:w-64">
                 <Field label="Multiplier">
                   <Select value={x} onChange={(e) => setX(Number(e.target.value))}>
                     {[1.5, 2, 3, 5].map((v) => (
@@ -128,7 +128,7 @@ export function ProposeFund() {
 
           <Card className="p-6">
             <div className="text-sm font-semibold">Launch conditions</div>
-            <div className="mt-4 grid grid-cols-3 gap-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field label="Pledge goal (BREAD)">
                 <Input type="number" value={pledgeGoal} onChange={(e) => setPledgeGoal(Math.max(0, Number(e.target.value)))} />
               </Field>

@@ -74,9 +74,9 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
   }
 
   return (
-    <div className="grid grid-cols-[1fr_400px] gap-10">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_400px] lg:gap-10">
       <div>
-        <h1 className="font-display text-[40px] font-semibold tracking-tight">Start a project</h1>
+        <h1 className="font-display text-3xl font-semibold md:text-[40px] tracking-tight">Start a project</h1>
 
         <div className="mt-8 space-y-8">
           <Card className="space-y-5 p-6">
@@ -87,7 +87,7 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
             <Field label="One-line pitch">
               <Input value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="What you're doing, in a sentence" maxLength={90} />
             </Field>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field label="Category">
                 <Select value={category} onChange={(e) => setCategory(e.target.value as Category)}>
                   {CATEGORIES.map((c) => (
@@ -159,7 +159,7 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
               </div>
             </label>
             {wasArtizen && (
-              <div className="mt-4 grid grid-cols-2 gap-4 pl-7">
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:pl-7">
                 <Field label="Season">
                   <Select value={season} onChange={(e) => setSeason(e.target.value)}>
                     {SEASONS.map((s) => (
@@ -176,7 +176,7 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
 
           <Card className="p-6">
             <div className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">Enter matching rounds</div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {openRounds.map((c) => {
                 const f = getFund(state, c.fundId)!
                 const on = campaignIds.includes(c.id)

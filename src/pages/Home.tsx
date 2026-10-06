@@ -55,7 +55,7 @@ function Checklist() {
   const n = steps.filter((s) => s.done).length
   if (n === steps.length) return null
   return (
-    <Card className="flex items-center gap-6 px-6 py-4">
+    <Card className="flex flex-col items-start gap-3 px-5 py-4 md:flex-row md:items-center md:gap-6 md:px-6">
       <div className="shrink-0">
         <div className="text-sm font-semibold">Onboarding</div>
         <div className="text-xs text-muted-foreground">{n}/{steps.length}</div>
@@ -97,8 +97,8 @@ export function Home() {
 
   return (
     <div className="space-y-14">
-      <section className="grid grid-cols-[1.25fr_1fr] items-stretch gap-8">
-        <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl bg-foreground p-10 text-background">
+      <section className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[1.25fr_1fr] lg:gap-8">
+        <div className="relative flex flex-col justify-between overflow-hidden rounded-3xl bg-foreground p-6 text-background md:p-10">
           <div className="absolute inset-0 opacity-25">
             <Cover seed={7} />
           </div>
@@ -107,14 +107,14 @@ export function Home() {
             <div className="inline-flex items-center gap-2 rounded-full bg-background/10 px-3 py-1 text-xs font-semibold backdrop-blur">
               <History size={13} /> For the projects Artizen left behind
             </div>
-            <h1 className="mt-6 max-w-xl font-display text-[54px] leading-[1.02] font-semibold tracking-tight">
+            <h1 className="mt-6 max-w-xl font-display text-4xl leading-[1.05] md:text-[54px] md:leading-[1.02] font-semibold tracking-tight">
               Artizen closed. <span className="text-wheat">The projects didn't.</span>
             </h1>
             <p className="mt-5 max-w-lg text-[17px] leading-relaxed text-background/75">
               Community-matched funding, run as a cooperative. Interest on shared reserves pays for matching.
             </p>
           </div>
-          <div className="relative mt-10 flex gap-3">
+          <div className="relative mt-8 flex flex-wrap gap-3 md:mt-10">
             <LinkButton href="#/funds" size="lg">
               Explore live rounds <ArrowRight size={16} />
             </LinkButton>
@@ -130,7 +130,7 @@ export function Home() {
 
       <section>
         <SectionTitle title="How it works" />
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
           {FLOW.map((f, i) => (
             <div key={f.title} className="relative">
               <Card className="h-full p-5">
@@ -141,14 +141,14 @@ export function Home() {
                 <div className="mt-1 text-sm text-muted-foreground">{f.text}</div>
               </Card>
               {i < FLOW.length - 1 && (
-                <ArrowRight className="absolute top-1/2 -right-[13px] z-10 -translate-y-1/2 rounded-full bg-background p-0.5 text-muted-foreground" size={22} />
+                <ArrowRight className="absolute top-1/2 -right-[13px] z-10 hidden -translate-y-1/2 lg:block rounded-full bg-background p-0.5 text-muted-foreground" size={22} />
               )}
             </div>
           ))}
         </div>
       </section>
 
-      <section className="grid grid-cols-[1.5fr_1fr] gap-8">
+      <section className="grid grid-cols-1 gap-8 lg:grid-cols-[1.5fr_1fr]">
         <div>
           <SectionTitle title="Rounds open now" action={<LinkButton href="#/funds" variant="ghost" size="sm">All funds <ArrowRight size={14} /></LinkButton>} />
           <div className="space-y-3">
@@ -187,7 +187,7 @@ export function Home() {
           sub="Live on Artizen when it shut down."
           action={<LinkButton href="#/projects?artizen=1" variant="ghost" size="sm">See all alumni <ArrowRight size={14} /></LinkButton>}
         />
-        <div className="grid grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {alumni.map((p) => (
             <ProjectCard key={p.id} project={p} campaign={featured && featured.projectIds.includes(p.id) ? featured : undefined} />
           ))}
@@ -199,7 +199,7 @@ export function Home() {
           title="Funds"
           action={<LinkButton href="#/propose" variant="outline" size="sm"><Sparkles size={14} /> Propose a fund</LinkButton>}
         />
-        <div className="grid grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {funds.map((f) => (
             <FundCard key={f.id} fund={f} />
           ))}

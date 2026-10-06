@@ -37,14 +37,14 @@ function SimClock() {
         title="Demo time controls"
       >
         <CalendarClock size={15} />
-        Day {state.day}
-        <span className="font-normal text-coop-ink/70">· S{state.season}</span>
-        <ChevronDown size={14} />
+        <span className="hidden sm:inline">Day</span> {state.day}
+        <span className="hidden font-normal text-coop-ink/70 sm:inline">· S{state.season}</span>
+        <ChevronDown size={14} className="hidden sm:block" />
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="pop-in absolute right-0 z-40 mt-2 w-80 rounded-2xl border border-border bg-card p-4 shadow-xl">
+          <div className="pop-in fixed inset-x-3 top-28 z-40 rounded-2xl sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-80 border border-border bg-card p-4 shadow-xl">
             <div className="text-xs font-semibold tracking-wide text-coop-ink uppercase">Demo time machine</div>
             <p className="mt-1 text-xs text-muted-foreground">
               Skip ahead to see yield build up and rounds pay out.
@@ -109,38 +109,44 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-8 px-8">
+        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 md:px-8 xl:h-16 xl:flex-nowrap xl:gap-8 xl:py-0">
           <a href="#/" className="flex items-center gap-2">
             <BreadLogo size={28} />
-            <span className="font-display text-[22px] font-semibold tracking-tight">Artizenal</span>
+            <span className="font-display text-xl font-semibold tracking-tight md:text-[22px]">Artizenal</span>
           </a>
-          <nav className="flex items-center gap-1">
+          <nav className="no-scrollbar order-last -mx-4 flex basis-full items-center gap-1 overflow-x-auto px-4 md:-mx-8 md:px-8 xl:order-none xl:mx-0 xl:basis-auto xl:px-0">
             {NAV.map((n) => (
               <a
                 key={n.href}
                 href={n.href}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-sm font-medium transition",
+                  "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition",
                   n.match(path) ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 {n.label}
               </a>
             ))}
-          </nav>
-          <div className="ml-auto flex items-center gap-2">
             <button
               onClick={() => setAboutOpen(true)}
-              className="flex h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+              className="shrink-0 rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap text-muted-foreground hover:bg-muted sm:hidden cursor-pointer"
+            >
+              About
+            </button>
+          </nav>
+          <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+            <button
+              onClick={() => setAboutOpen(true)}
+              className="hidden h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer sm:flex"
               title="What is this showcase?"
             >
               <Info size={16} /> About
             </button>
             <SimClock />
-            <a href="#/wallet" className="flex h-10 items-center gap-3 rounded-full border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted" title="Wallet">
+            <a href="#/wallet" className="hidden h-10 items-center gap-3 rounded-full sm:flex border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted" title="Wallet">
               <Bread value={state.me.bread} digits={state.me.bread % 1 ? 2 : 0} />
             </a>
-            <a href="#/points" className="flex h-10 items-center rounded-full border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted" title="Points you can give">
+            <a href="#/points" className="hidden h-10 items-center rounded-full md:flex border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted" title="Points you can give">
               <Pts value={pointsBalance(state, ME)} />
             </a>
             <button
@@ -162,10 +168,10 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1280px] px-8 pt-8 pb-24">{children}</main>
+      <main className="mx-auto max-w-[1280px] px-4 pt-6 pb-24 md:px-8 md:pt-8">{children}</main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between px-8 py-8 text-xs text-muted-foreground">
+        <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 py-8 text-xs text-muted-foreground md:px-8">
           <div className="flex items-center gap-2">
             <BreadLogo size={16} /> A Bread Cooperative showcase. Everything is simulated.
           </div>
@@ -177,12 +183,12 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
       <Onboarding />
       <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
 
-      <div className="pointer-events-none fixed bottom-6 left-1/2 z-[60] flex -translate-x-1/2 flex-col items-center gap-2">
+      <div className="pointer-events-none fixed bottom-6 left-1/2 z-[60] flex w-[calc(100%-2rem)] max-w-md -translate-x-1/2 flex-col items-center gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}
             className={cn(
-              "pop-in flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium shadow-lg",
+              "pop-in flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium shadow-lg",
               t.tone === "ok" ? "bg-foreground text-background" : "bg-destructive text-destructive-foreground"
             )}
           >

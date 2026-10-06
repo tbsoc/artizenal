@@ -103,7 +103,7 @@ function StartCampaignModal({ fund, open, onClose }: { fund: Fund; open: boolean
         <Field label="Description">
           <Textarea value={blurb} onChange={(e) => setBlurb(e.target.value)} className="min-h-20" />
         </Field>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label="Matching pool" hint={`Reserve: ${num(fund.reserve)} BREAD`}>
             <Input type="number" value={pool || ""} onChange={(e) => setPool(Math.max(0, Number(e.target.value)))} />
           </Field>
@@ -120,7 +120,7 @@ function StartCampaignModal({ fund, open, onClose }: { fund: Fund; open: boolean
         </div>
         <div>
           <div className="mb-2 text-sm font-semibold">Projects ({picked.length})</div>
-          <div className="grid max-h-56 grid-cols-2 gap-2 overflow-y-auto pr-1">
+          <div className="grid max-h-56 grid-cols-1 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
             {candidates.map((p) => {
               const on = picked.includes(p.id)
               return (
@@ -187,7 +187,7 @@ function CampaignPanel({ campaign, fund }: { campaign: Campaign; fund: Fund }) {
   return (
     <div className="space-y-6">
       <Card className="p-6">
-        <div className="flex items-start justify-between gap-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <StatusPill status={status} />
@@ -208,7 +208,7 @@ function CampaignPanel({ campaign, fund }: { campaign: Campaign; fund: Fund }) {
             </Button>
           )}
         </div>
-        <div className="mt-6 grid grid-cols-4 gap-6 border-t border-border pt-5">
+        <div className="mt-6 grid grid-cols-2 gap-6 border-t border-border pt-5 md:grid-cols-4">
           <Stat label="Matching pool" value={<Bread value={campaign.matchingPool} />} />
           <Stat label="Donated in BREAD" value={<Bread value={totalGiven} />} sub={`${new Set(contribs.map((c) => c.donor)).size} donors`} />
           {status === "ended" ? (
@@ -238,7 +238,8 @@ function CampaignPanel({ campaign, fund }: { campaign: Campaign; fund: Fund }) {
           <div className="text-sm font-semibold">{status === "ended" ? "Final results" : "Live match estimate"}</div>
           <div className="text-xs text-muted-foreground">Only BREAD donations made in this round count toward matching</div>
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
           <thead className="text-left text-xs text-muted-foreground">
             <tr>
               <th className="px-5 py-2 font-medium">Project</th>
@@ -273,9 +274,10 @@ function CampaignPanel({ campaign, fund }: { campaign: Campaign; fund: Fund }) {
             ))}
           </tbody>
         </table>
+          </div>
       </Card>
 
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {campaign.projectIds.map((pid) => {
           const p = getProject(state, pid)
           return p ? <ProjectCard key={pid} project={p} campaign={campaign} /> : null
@@ -318,14 +320,14 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
           <Cover seed={fund.coverSeed} />
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-foreground/90 via-foreground/70 to-foreground/20" />
-        <div className="relative flex items-end justify-between gap-10 p-10 text-background">
+        <div className="relative flex flex-col items-start gap-6 p-6 text-background md:flex-row md:items-end md:justify-between md:gap-10 md:p-10">
           <div className="max-w-2xl">
             <div className="flex items-center gap-2">
               <MechanismBadge m={fund.mechanism} className="bg-card" />
               {fund.status === "proposed" ? <Badge tone="primary" className="bg-card">Proposed</Badge> : <Badge tone="success" className="bg-card">Active</Badge>}
               <Badge tone="outline" className="border-background/30 bg-transparent text-background/80">{fund.category}</Badge>
             </div>
-            <h1 className="mt-4 font-display text-[48px] leading-tight font-semibold tracking-tight">{fund.name}</h1>
+            <h1 className="mt-4 font-display text-3xl leading-tight md:text-[48px] font-semibold tracking-tight">{fund.name}</h1>
             <p className="mt-2 text-lg text-background/80">{fund.tagline}</p>
             <div className="mt-5 flex items-center gap-3 text-sm text-background/80">
               <div className="flex -space-x-2">
@@ -336,7 +338,7 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
               Curated by {fund.curators.map((c) => (c === ME ? "you" : getUser(state, c)?.name)).join(" & ")}
             </div>
           </div>
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 flex-wrap gap-2">
             <Button size="lg" onClick={() => setGiveOpen(true)}>
               <HandCoins size={17} /> {fund.status === "proposed" ? "Pledge BREAD" : "Give to this fund"}
             </Button>
@@ -348,7 +350,7 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
       </div>
 
       {fund.status === "active" ? (
-        <div className="mt-6 grid grid-cols-3 gap-4">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Card className="p-5">
             <Stat label="Live matching" value={<Bread value={livePool} />} />
           </Card>
@@ -360,7 +362,7 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
           </Card>
         </div>
       ) : (
-        <Card className="mt-6 grid grid-cols-[1fr_1fr_1.2fr] gap-8 p-6">
+        <Card className="mt-6 grid grid-cols-1 gap-6 p-6 md:grid-cols-[1fr_1fr_1.2fr] md:gap-8">
           <div>
             <div className="flex items-center gap-2 text-sm font-semibold">
               <Rocket size={16} /> Pledges to launch
@@ -385,7 +387,7 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
         </Card>
       )}
 
-      <div className="mt-10 grid grid-cols-[1fr_320px] gap-10">
+      <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-display text-[28px] font-semibold">Rounds</h2>
