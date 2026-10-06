@@ -410,7 +410,7 @@ export function AboutContent() {
       <div className="flex items-center gap-3">
         <BreadLogo size={34} />
         <div>
-          <div className="font-display text-2xl font-semibold leading-tight">Why Artizenal exists</div>
+          <div className="font-display text-2xl font-semibold leading-tight">Why Pastry exists</div>
           <div className="text-sm text-muted-foreground">
             A showcase by the{" "}
             <a href="https://bread.coop" target="_blank" rel="noreferrer" className="font-semibold text-[#EA5817] hover:underline">
@@ -489,7 +489,7 @@ export function Onboarding() {
       >
         <div className="flex items-center gap-3">
           <BreadLogo size={30} />
-          <h2 className="font-display text-2xl font-semibold">Join Artizenal</h2>
+          <h2 className="font-display text-2xl font-semibold">Join Pastry</h2>
         </div>
         <Field label="Name">
           <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Sam Baker" />

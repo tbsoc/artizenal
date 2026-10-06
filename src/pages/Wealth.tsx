@@ -39,7 +39,7 @@ export function Wealth() {
       <SectionTitle
         title={
           <span className="flex items-center gap-3">
-            <Landmark size={26} className="text-crust" /> Artizenal Wealth Fund
+            <Landmark size={26} className="text-crust" /> Pastry Wealth Fund
           </span>
         }
         sub="Every art token and every endowment sits here. The reserves earn yield in DeFi through savings protocols and ETH staking. Only that yield is used, and it pays for matching."

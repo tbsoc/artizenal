@@ -54,7 +54,7 @@ export function Points() {
   const referralEarned = state.points.filter((p) => p.userId === ME && (p.reason === "referral" || p.reason === "referral-bonus")).reduce((a, p) => a + p.amount, 0)
   const leaderboard = state.users.map((u) => ({ u, pts: userPoints(state, u.id) })).sort((a, b) => b.pts - a.pts)
   const myRank = leaderboard.findIndex((r) => r.u.id === ME) + 1
-  const link = `artizenal.coop/join/${state.me.referralCode}`
+  const link = `pastry.coop/join/${state.me.referralCode}`
 
   return (
     <div className="space-y-8">

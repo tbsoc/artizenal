@@ -99,7 +99,7 @@ export interface Donation {
   day: number
 }
 
-/** A permanent gift of principal to the Artizenal Wealth Fund. */
+/** A permanent gift of principal to the Pastry Wealth Fund. */
 export interface Endowment {
   id: string
   userId: string

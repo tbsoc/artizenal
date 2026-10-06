@@ -119,7 +119,7 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
         <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-3 px-4 md:px-8 xl:gap-5 2xl:gap-8">
           <a href="#/" className="flex items-center gap-2">
             <BreadLogo size={28} />
-            <span className="font-display text-xl font-semibold tracking-tight md:text-[22px]">Artizenal</span>
+            <span className="font-display text-xl font-semibold tracking-tight md:text-[22px]">Pastry</span>
           </a>
           <nav className="hidden items-center gap-1 xl:flex">
             {NAV.map((n) => (

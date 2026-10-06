@@ -31,7 +31,7 @@ export function Wallet() {
       .map((d) => ({ day: d.day, label: getFund(state, d.fundId)?.name ?? "", href: `#/f/${d.fundId}`, value: `${num(d.amount)} artUSD`, kind: "Fund gift" })),
     ...state.endowments
       .filter((e) => e.userId === ME)
-      .map((e) => ({ day: e.day, label: "Artizenal Wealth Fund", href: "#/wealth", value: `${fmtUnits(e.asset, e.units)} ${ASSETS[e.asset].base}`, kind: "Endowment" })),
+      .map((e) => ({ day: e.day, label: "Pastry Wealth Fund", href: "#/wealth", value: `${fmtUnits(e.asset, e.units)} ${ASSETS[e.asset].base}`, kind: "Endowment" })),
     ...state.projects
       .filter((p) => p.creatorId === ME)
       .map((p) => ({ day: p.createdDay, label: `${p.title} deposit (${p.deposit.status})`, href: `#/p/${p.id}`, value: `${p.deposit.amount} artUSD`, kind: "Spam deposit" })),

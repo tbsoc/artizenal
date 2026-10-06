@@ -99,7 +99,7 @@ export function Progress({
 }
 
 export function Avatar({ user, size = 32, className }: { user?: User; size?: number; className?: string }) {
-  const name = user?.name ?? "Artizenal"
+  const name = user?.name ?? "Pastry"
   const hue = user?.hue ?? 26
   return (
     <div

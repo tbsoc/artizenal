@@ -104,7 +104,7 @@ export function wealthUnits(s: State, a: Asset) {
   return s.supply[a] + s.me.art[a] + s.endowed[a]
 }
 
-/** Total dollar value of the Artizenal Wealth Fund. */
+/** Total dollar value of the Pastry Wealth Fund. */
 export function totalSupply(s: State) {
   return ASSET_IDS.reduce((t, a) => t + toUsd(a, wealthUnits(s, a)), 0)
 }
@@ -422,8 +422,8 @@ function useStoreValue() {
           s.me.onboarded = true
           s.me.referralCode = code
           if (referrer) award(s, referrer.id, POINT_RULES.referral, "referral", `${clean} joined with their link`)
-          award(s, ME, POINT_RULES.welcome, "welcome", "Welcome to Artizenal")
-          log(s, ME, referrer ? `joined via ${referrer.name}'s invite` : "joined Artizenal")
+          award(s, ME, POINT_RULES.welcome, "welcome", "Welcome to Pastry")
+          log(s, ME, referrer ? `joined via ${referrer.name}'s invite` : "joined Pastry")
           return { ok: true }
         })
       },
@@ -721,7 +721,7 @@ function useStoreValue() {
             referredBy: ME,
           })
           award(s, ME, POINT_RULES.referral, "referral", `${name} joined with your link`)
-          award(s, id, POINT_RULES.welcome, "welcome", "Welcome to Artizenal")
+          award(s, id, POINT_RULES.welcome, "welcome", "Welcome to Pastry")
           log(s, id, `joined via your invite`)
           const live = s.campaigns.filter((c) => campaignStatus(c, s.day) === "live")
           if (live.length) {
