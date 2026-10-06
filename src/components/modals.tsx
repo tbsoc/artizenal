@@ -415,12 +415,21 @@ export function AboutContent() {
         <BreadLogo size={34} />
         <div>
           <div className="font-display text-2xl font-semibold leading-tight">Why Artizenal exists</div>
-          <div className="text-sm text-muted-foreground">A showcase built on the Bread Cooperative stack</div>
+          <div className="text-sm text-muted-foreground">
+            A showcase by the{" "}
+            <a href="https://bread.coop" target="_blank" rel="noreferrer" className="font-semibold text-[#EA5817] hover:underline">
+              Bread Cooperative
+            </a>
+          </div>
         </div>
       </div>
       <p className="text-[15px] leading-relaxed text-foreground/85">
         Artizen recently announced that it is closing down. Many artists, scientists and organizers lost matching they were counting on, some of them in the
-        middle of a round. Artizenal is our attempt to show what an alternative could look like if it worked differently.
+        middle of a round. We're the{" "}
+        <a href="https://bread.coop" target="_blank" rel="noreferrer" className="font-semibold text-[#EA5817] hover:underline">
+          Bread Cooperative
+        </a>
+        , and Artizenal is our attempt to show what an alternative could look like if it worked differently, built on our own tools.
       </p>
       <div className="space-y-3">
         {PRINCIPLES.map((p) => (
