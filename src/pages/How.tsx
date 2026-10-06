@@ -14,8 +14,8 @@ const QA: { q: string; a: string }[] = [
     a: "Interest on the USDC behind BREAD. Each season it's split between funds. Principal is never spent.",
   },
   {
-    q: "Why do only BREAD donations get matched?",
-    a: "BREAD earns the yield that pays for matching. USDC gifts still reach projects in full.",
+    q: "Why donate in BREAD?",
+    a: "BREAD earns the yield that pays for matching, so every gift keeps the loop going.",
   },
   {
     q: "What are points for?",

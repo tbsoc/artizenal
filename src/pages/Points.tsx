@@ -1,4 +1,4 @@
-import { Copy, UserPlus, Trophy, HandCoins, Gift, Landmark, Rocket, History, Vote, Sprout, Users, Star } from "lucide-react"
+import { Copy, UserPlus, Trophy, HandCoins, Landmark, Rocket, History, Vote, Sprout, Users, Star } from "lucide-react"
 import { Avatar, Button, Card, Pts, SectionTitle, Badge, PointsTabs } from "@/components/ui"
 import { ME, POINT_RULES, pointsBalance, pointsGiven, useStore, userPoints } from "@/lib/store"
 import { PROPOSE_MIN_POINTS } from "@/lib/seed"
@@ -22,7 +22,6 @@ const EARN = [
   { icon: Rocket, title: "Launch a project", value: `+${POINT_RULES.createProject}`, note: "One time" },
   { icon: History, title: "Artizen alumni", value: `+${num(POINT_RULES.artizenAlumni)}`, note: "One time" },
   { icon: Vote, title: "Curate", value: `+${POINT_RULES.proposeFund} / +${POINT_RULES.curate}`, note: "Propose a fund / run a round" },
-  { icon: Gift, title: "Back a project with USDC", value: `${POINT_RULES.perUsdc} per USDC`, note: "Not matched" },
 ]
 
 const REASON_LABEL: Record<string, string> = {
@@ -30,7 +29,6 @@ const REASON_LABEL: Record<string, string> = {
   referral: "Referral",
   "referral-bonus": "Referral share",
   "donate-bread": "Donation",
-  "donate-usdc": "USDC donation",
   "donate-fund": "Fund gift",
   "early-backer": "Early backer",
   holding: "Holding BREAD",

@@ -24,7 +24,6 @@ export const POINT_RULES = {
   referral: 500,
   referralShare: 0.1,
   perBread: 10,
-  perUsdc: 5,
   perFundBread: 20,
   earlyBacker: 50,
   earlyBackerSlots: 10,
@@ -121,7 +120,6 @@ export function getUser(s: State, id: string) {
 export function projectStats(s: State, pid: string) {
   const ds = s.donations.filter((d) => d.projectId === pid)
   const bread = ds.filter((d) => d.currency === "BREAD").reduce((a, d) => a + d.amount, 0)
-  const usdc = ds.filter((d) => d.currency === "USDC").reduce((a, d) => a + d.amount, 0)
   const donors = new Set(ds.map((d) => d.from)).size
   let matched = 0
   let pendingMatch = 0
@@ -133,7 +131,7 @@ export function projectStats(s: State, pid: string) {
     else if (campaignStatus(c, s.day) === "live")
       pendingMatch += campaignMatches(c, fund.mechanism, s.donations).matches[pid] ?? 0
   }
-  return { bread, usdc, donors, matched, pendingMatch, total: bread + usdc + matched, donations: ds }
+  return { bread, donors, matched, pendingMatch, total: bread + matched, donations: ds }
 }
 
 export function projectCampaigns(s: State, pid: string) {
@@ -185,8 +183,8 @@ function addDonation(
   award(
     s,
     from,
-    amount * (currency === "BREAD" ? POINT_RULES.perBread : POINT_RULES.perUsdc),
-    currency === "BREAD" ? "donate-bread" : "donate-usdc",
+    amount * POINT_RULES.perBread,
+    "donate-bread",
     `Donated to ${project.title}`
   )
   if (!priorDonors.has(from) && priorDonors.size < POINT_RULES.earlyBackerSlots) {
@@ -426,16 +424,14 @@ function useStoreValue() {
         })
       },
 
-      donate(projectId: string, amount: number, currency: Currency, campaignId?: string): Result {
+      donate(projectId: string, amount: number, campaignId?: string): Result {
         return mutate((s) => {
           if (amount <= 0) return { ok: false, error: "Enter an amount" }
-          if (currency === "BREAD" && amount > s.me.bread) return { ok: false, error: "Not enough BREAD. Convert some USDC first." }
-          if (currency === "USDC" && amount > s.me.usdc) return { ok: false, error: "Not enough USDC" }
-          if (currency === "BREAD") s.me.bread -= amount
-          else s.me.usdc -= amount
-          addDonation(s, ME, projectId, amount, currency, currency === "BREAD" ? campaignId : undefined)
+          if (amount > s.me.bread) return { ok: false, error: "Not enough BREAD. Convert some USDC first." }
+          s.me.bread -= amount
+          addDonation(s, ME, projectId, amount, "BREAD", campaignId)
           const p = getProject(s, projectId)!
-          log(s, ME, `donated ${amount} ${currency} to ${p.title}`, `#/p/${p.id}`)
+          log(s, ME, `donated ${amount} BREAD to ${p.title}`, `#/p/${p.id}`)
           refundDeposits(s)
           return { ok: true }
         })

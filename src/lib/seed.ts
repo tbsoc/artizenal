@@ -11,7 +11,7 @@ import type {
   User,
 } from "./types"
 
-export const STATE_VERSION = 6
+export const STATE_VERSION = 7
 export const PROJECT_DEPOSIT = 25
 export const PROPOSE_MIN_POINTS = 1000
 export const START_USDC = 750
@@ -500,20 +500,6 @@ function buildDonations(r: () => number, everyone: User[]): Donation[] {
           day: c.startDay + Math.floor(r() * (last - c.startDay + 1)),
         })
       }
-    }
-  }
-  // unmatched card donations scattered across projects
-  for (const p of projects) {
-    const count = Math.floor(r() * 4)
-    for (let i = 0; i < count; i++) {
-      out.push({
-        id: `sd${n++}`,
-        from: donors[Math.floor(r() * donors.length)],
-        projectId: p.id,
-        amount: AMOUNTS[Math.floor(r() * AMOUNTS.length)] * 2,
-        currency: "USDC",
-        day: p.createdDay + Math.floor(r() * (SEED_DAY - p.createdDay)),
-      })
     }
   }
   return out.sort((a, b) => a.day - b.day)

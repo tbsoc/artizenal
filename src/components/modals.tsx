@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react"
-import { ArrowRight, X, CircleDollarSign, PartyPopper, ShoppingBasket, Trash2, Info, Sparkles, ScrollText, Scale, ShieldCheck } from "lucide-react"
+import { ArrowRight, X, PartyPopper, ShoppingBasket, Trash2, Info, Sparkles, ScrollText, Scale, ShieldCheck } from "lucide-react"
 import { Bread, BreadLogo, Button, Field, Input, Loaf, Modal, Pts, Select, MechanismBadge } from "./ui"
 import { Cover } from "./Cover"
 import { POINT_RULES, campaignStatus, getFund, getProject, ME, useStore } from "@/lib/store"
 import { basketMatch, marginalMatch, MECHANISM_INFO } from "@/lib/matching"
-import type { Currency, Fund, Project } from "@/lib/types"
+import type { Fund, Project } from "@/lib/types"
 import { cn, num } from "@/lib/utils"
 
 const PRESETS = [5, 10, 25, 50, 100]
@@ -55,7 +55,6 @@ export function DonateModal({
   const liveCampaigns = state.campaigns.filter(
     (c) => c.projectIds.includes(project.id) && campaignStatus(c, state.day) === "live"
   )
-  const [currency, setCurrency] = useState<Currency>("BREAD")
   const [amount, setAmount] = useState(25)
   const [campaignId, setCampaignId] = useState<string>(
     defaultCampaignId && liveCampaigns.some((c) => c.id === defaultCampaignId) ? defaultCampaignId : liveCampaigns[0]?.id ?? ""
@@ -65,11 +64,11 @@ export function DonateModal({
   const campaign = liveCampaigns.find((c) => c.id === campaignId)
   const fund = campaign ? getFund(state, campaign.fundId) : undefined
   const match =
-    currency === "BREAD" && campaign && fund && amount > 0
+    campaign && fund && amount > 0
       ? marginalMatch(campaign, fund.mechanism, state.donations, project.id, ME, amount)
       : 0
-  const points = Math.round(amount * (currency === "BREAD" ? POINT_RULES.perBread : POINT_RULES.perUsdc))
-  const balance = currency === "BREAD" ? state.me.bread : state.me.usdc
+  const points = Math.round(amount * POINT_RULES.perBread)
+  const balance = state.me.bread
 
   const close = () => {
     setDone(null)
@@ -77,7 +76,7 @@ export function DonateModal({
   }
 
   const submit = () => {
-    const r = actions.donate(project.id, amount, currency, campaign?.id)
+    const r = actions.donate(project.id, amount, campaign?.id)
     if (!r.ok) return toast(r.error, "err")
     setDone({ amount, match, points })
   }
@@ -91,7 +90,7 @@ export function DonateModal({
           </div>
           <h3 className="mt-4 font-display text-2xl font-semibold">Thank you!</h3>
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            You gave {currency === "BREAD" ? `${done.amount} BREAD` : `${done.amount} USDC`} to {project.title}
+            You gave {done.amount} BREAD to {project.title}
             {done.match > 0.5 && (
               <>
                 , which unlocked about <b className="text-community">{num(done.match)} BREAD</b> in matching
@@ -110,27 +109,6 @@ export function DonateModal({
         </div>
       ) : (
         <div className="space-y-5">
-          <div className="grid grid-cols-2 gap-2">
-            {(["BREAD", "USDC"] as Currency[]).map((c) => (
-              <button
-                key={c}
-                onClick={() => setCurrency(c)}
-                className={cn(
-                  "rounded-2xl border-2 p-3.5 text-left transition cursor-pointer",
-                  currency === c ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
-                )}
-              >
-                <div className="flex items-center gap-2 font-semibold">
-                  {c === "BREAD" ? <Loaf size={18} /> : <CircleDollarSign size={17} className="text-coop-ink" />}
-                  {c === "BREAD" ? "Give BREAD" : "Give USDC"}
-                </div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {c === "BREAD" ? `Matched · ${POINT_RULES.perBread} pts each` : `Not matched · ${POINT_RULES.perUsdc} pts each`}
-                </div>
-              </button>
-            ))}
-          </div>
-
           <div>
             <div className="mb-2 text-sm font-semibold">Amount</div>
             <div className="flex flex-wrap gap-2">
@@ -156,12 +134,10 @@ export function DonateModal({
               />
             </div>
             <div className="mt-1.5 text-xs text-muted-foreground">
-              Balance: {currency === "BREAD" ? `${num(balance, 2)} BREAD` : `${num(balance, 2)} USDC`}
+              Balance: {num(balance, 2)} BREAD
             </div>
           </div>
 
-          {currency === "BREAD" && (
-            <>
               {liveCampaigns.length > 0 ? (
                 <Field label="Round">
                   <Select value={campaignId} onChange={(e) => setCampaignId(e.target.value)}>
@@ -196,15 +172,13 @@ export function DonateModal({
                 </div>
               )}
               {amount > state.me.bread && <QuickBake need={amount} />}
-            </>
-          )}
 
           <div className="flex items-center justify-between border-t border-border pt-4">
             <span className="text-sm font-semibold text-coop-ink">
               <Pts value={points} /> points
             </span>
             <Button size="lg" onClick={submit} disabled={amount <= 0 || amount > balance}>
-              Give {num(amount)} {currency} <ArrowRight size={16} />
+              Give {num(amount)} BREAD <ArrowRight size={16} />
             </Button>
           </div>
         </div>

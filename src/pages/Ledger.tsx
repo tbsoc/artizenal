@@ -15,7 +15,7 @@ interface Entry {
   to: string
   toHref?: string
   amount: number
-  unit: "BREAD" | "USDC" | "points"
+  unit: "BREAD" | "points"
   note: string
 }
 
@@ -58,7 +58,7 @@ function buildLedger(s: State): Entry[] {
       toHref: `#/p/${d.projectId}`,
       amount: d.amount,
       unit: d.currency,
-      note: round ? `Counts toward ${round}` : d.currency === "USDC" ? "Not matched (USDC)" : "Outside a round",
+      note: round ? `Counts toward ${round}` : "Outside a round",
     })
   }
   for (const d of s.fundDonations) {
@@ -179,7 +179,7 @@ export function Ledger() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <Card className="p-5">
-          <Stat label="Donated to projects" value={<Bread value={sum("donation", "BREAD")} />} sub={`+ ${num(sum("donation", "USDC"))} USDC`} />
+          <Stat label="Donated to projects" value={<Bread value={sum("donation", "BREAD")} />} />
         </Card>
         <Card className="p-5">
           <Stat label="Given to funds" value={<Bread value={sum("fund-gift")} />} />
@@ -246,7 +246,7 @@ export function Ledger() {
                     )}
                   </td>
                   <td className="px-3 py-2.5 text-right font-semibold whitespace-nowrap">
-                    {r.unit === "BREAD" ? <Bread value={r.amount} digits={r.amount < 10 ? 2 : 0} /> : r.unit === "points" ? <Pts value={r.amount} /> : `${num(r.amount)} USDC`}
+                    {r.unit === "BREAD" ? <Bread value={r.amount} digits={r.amount < 10 ? 2 : 0} /> : <Pts value={r.amount} />}
                   </td>
                   <td className="max-w-[300px] truncate px-4 py-2.5 text-xs text-muted-foreground">{r.note}</td>
                 </tr>

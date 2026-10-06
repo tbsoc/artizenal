@@ -86,7 +86,7 @@ export interface Campaign {
   settled?: Record<string, number> // projectId -> match paid out
 }
 
-export type Currency = "BREAD" | "USDC"
+export type Currency = "BREAD"
 
 export interface Donation {
   id: string
@@ -112,7 +112,6 @@ export type PointsReason =
   | "referral"
   | "referral-bonus"
   | "donate-bread"
-  | "donate-usdc"
   | "donate-fund"
   | "early-backer"
   | "holding"

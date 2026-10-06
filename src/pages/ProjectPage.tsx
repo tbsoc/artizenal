@@ -35,10 +35,9 @@ export function ProjectPage({ id }: { id: string }) {
     (c) => !c.projectIds.includes(project.id) && campaignStatus(c, state.day) !== "ended" && getFund(state, c.fundId)?.status === "active"
   )
   const donorList = Object.entries(
-    stats.donations.reduce<Record<string, { bread: number; usdc: number; last: number }>>((m, d) => {
-      const e = (m[d.from] ??= { bread: 0, usdc: 0, last: 0 })
-      if (d.currency === "BREAD") e.bread += d.amount
-      else e.usdc += d.amount
+    stats.donations.reduce<Record<string, { bread: number; last: number }>>((m, d) => {
+      const e = (m[d.from] ??= { bread: 0, last: 0 })
+      e.bread += d.amount
       e.last = Math.max(e.last, d.day)
       return m
     }, {})
@@ -159,7 +158,6 @@ export function ProjectPage({ id }: { id: string }) {
                     </div>
                     <div className="text-right text-sm">
                       {d.bread > 0 && <Bread value={d.bread} className="font-semibold" />}
-                      {d.usdc > 0 && <div className="text-xs text-muted-foreground">+ {num(d.usdc)} USDC</div>}
                     </div>
                   </div>
                 )
@@ -176,12 +174,8 @@ export function ProjectPage({ id }: { id: string }) {
             <Progress value={(stats.total / project.goal) * 100} extra={(stats.pendingMatch / project.goal) * 100} className="mt-4 h-2.5" />
             <div className="mt-4 grid grid-cols-2 gap-y-3 text-sm">
               <div>
-                <div className="text-xs text-muted-foreground">Donated in BREAD</div>
+                <div className="text-xs text-muted-foreground">Donated</div>
                 <Bread value={stats.bread} className="font-semibold" />
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">Donated in USDC</div>
-                <span className="font-semibold">{num(stats.usdc)} USDC</span>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Matching paid</div>
