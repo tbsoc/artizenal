@@ -11,7 +11,6 @@ import { Allocate } from "@/pages/Allocate"
 import { Wallet } from "@/pages/Wallet"
 import { Points } from "@/pages/Points"
 import { How } from "@/pages/How"
-import { Ledger } from "@/pages/Ledger"
 import { Wealth } from "@/pages/Wealth"
 
 export default function App() {
@@ -50,9 +49,6 @@ export default function App() {
       break
     case "wealth":
       page = <Wealth />
-      break
-    case "ledger":
-      page = <Ledger />
       break
     case "how":
       page = <How />

@@ -16,7 +16,6 @@ npm run dev
 - **Art tokens**: artUSD, artEUR and artETH, each created 1:1 from USDC, EURC or ETH (simulated rates and APYs in `src/lib/assets.ts`). Members can donate to projects in any of them; matching counts their dollar value.
 - **Artizenal Wealth Fund**: every art token plus permanent endowments. Its yield is the season's matching pool. Endowing USDC, EURC or ETH is permanent and earns 100 points per $1.
 - **Points**: each season members give points to funds, setting a ratio with − / + like fund.bread.coop. A fund's share of the season's yield is its points ÷ all points given. Given points are spent and the tally resets every season.
-- **Ledger**: a public record of every donation, fund gift, yield split, match payout and point gift, with CSV export.
 - **About**: a first-visit modal explaining why the showcase exists (Artizen closing; auditable, realistic matching, funds not put at risk).
 - **Funds**: each fund chooses quadratic funding, a 1:1 match up to a cap, or a fixed multiplier. Members can give to a fund's live round or its reserve. A proposed fund launches once it hits both its pledge goal and its points-backing goal.
 - **Rounds**: only artUSD donations made inside a round are matched. USDC donations reach the project but aren't matched. Collect projects into a basket and see the match you unlock.

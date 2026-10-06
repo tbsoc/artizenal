@@ -12,7 +12,6 @@ const NAV = [
   { href: "#/funds", label: "Funds", match: (p: string) => p.startsWith("/funds") || p.startsWith("/f/") || p.startsWith("/propose") },
   { href: "#/wealth", label: "Wealth Fund", match: (p: string) => p.startsWith("/wealth") },
   { href: "#/allocate", label: "Points", match: (p: string) => p.startsWith("/allocate") || p.startsWith("/points") },
-  { href: "#/ledger", label: "Ledger", match: (p: string) => p.startsWith("/ledger") },
   { href: "#/how", label: "How it works", match: (p: string) => p.startsWith("/how") },
 ]
 

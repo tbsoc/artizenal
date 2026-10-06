@@ -389,7 +389,7 @@ const PRINCIPLES = [
   {
     icon: ScrollText,
     title: "Fully auditable",
-    text: "Every donation, yield split and payout is on a public ledger.",
+    text: "Every donation, yield split and payout is publicly recorded.",
   },
   {
     icon: Scale,
@@ -451,9 +451,6 @@ export function AboutModal({ open, onClose }: { open: boolean; onClose: () => vo
     <Modal open={open} onClose={onClose} width={600}>
       <AboutContent />
       <div className="mt-6 flex justify-end gap-2">
-        <a href="#/ledger" onClick={onClose} className="inline-flex h-10 items-center rounded-full px-4 text-sm font-semibold hover:bg-muted">
-          Public ledger
-        </a>
         <Button variant="dark" onClick={onClose}>
           Got it
         </Button>
