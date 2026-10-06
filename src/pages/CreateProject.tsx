@@ -77,7 +77,6 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
     <div className="grid grid-cols-[1fr_400px] gap-10">
       <div>
         <h1 className="font-display text-[40px] font-semibold tracking-tight">Start a project</h1>
-        <p className="mt-1 text-muted-foreground">Tell people what you're making and why it matters. You can enter matching rounds straight away.</p>
 
         <div className="mt-8 space-y-8">
           <Card className="space-y-5 p-6">
@@ -110,8 +109,8 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
 
           <Card className="space-y-5 p-6">
             <div className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">Story & image</div>
-            <Field label="Description" hint="Leave a blank line between paragraphs. At least 40 characters.">
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-44" placeholder="What are you making? Who is it for? What will the money pay for?" />
+            <Field label="Description" hint="40 characters minimum.">
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-44" placeholder="What, who for, and what the money pays for" />
             </Field>
             <div>
               <div className="mb-1.5 text-sm font-semibold">Cover image</div>
@@ -128,7 +127,7 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
                   <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
                     <ImagePlus size={14} /> Upload image
                   </Button>
-                  <div className="mt-1.5 text-xs text-muted-foreground">No image? We'll generate cover art for you.</div>
+                  <div className="mt-1.5 text-xs text-muted-foreground">Optional</div>
                 </div>
                 <input
                   ref={fileRef}
@@ -156,21 +155,19 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
                 <div className="flex items-center gap-2 font-semibold">
                   <History size={16} /> This project was on Artizen
                 </div>
-                <div className="mt-0.5 text-sm text-muted-foreground">
-                  Alumni get a badge, can enter the Artizen Rescue Fund, and receive a {num(POINT_RULES.artizenAlumni)}-point welcome.
-                </div>
+                <div className="mt-0.5 text-sm text-muted-foreground">Alumni badge + {num(POINT_RULES.artizenAlumni)} points</div>
               </div>
             </label>
             {wasArtizen && (
               <div className="mt-4 grid grid-cols-2 gap-4 pl-7">
-                <Field label="Which season?">
+                <Field label="Season">
                   <Select value={season} onChange={(e) => setSeason(e.target.value)}>
                     {SEASONS.map((s) => (
                       <option key={s}>{s}</option>
                     ))}
                   </Select>
                 </Field>
-                <Field label="Old Artizen page or archive link" hint="Curators check this before the badge is confirmed. In the demo it's instant.">
+                <Field label="Artizen page link">
                   <Input value={artizenUrl} onChange={(e) => setArtizenUrl(e.target.value)} placeholder="https://artizen.fund/…" />
                 </Field>
               </div>
@@ -214,8 +211,8 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
               <Badge tone="outline" className="absolute top-3 right-3 border-0 bg-card/90">{category}</Badge>
             </div>
             <div className="p-4">
-              <div className="font-display text-lg font-semibold">{title || "Your project name"}</div>
-              <div className="mt-1 text-sm text-muted-foreground">{tagline || "Your one-line pitch goes here."}</div>
+              <div className="font-display text-lg font-semibold">{title || "Project name"}</div>
+              <div className="mt-1 text-sm text-muted-foreground">{tagline || "One-line pitch"}</div>
             </div>
           </Card>
 
@@ -224,8 +221,7 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
               <ShieldCheck size={17} className="text-success" /> Refundable spam deposit
             </div>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              Creating a project puts down <b className="text-foreground">{PROJECT_DEPOSIT} BREAD</b>. You get it back once 3 different people back you, or after 14
-              days without spam reports. If curators remove the project as spam, the deposit goes to the matching pool.
+              <b className="text-foreground">{PROJECT_DEPOSIT} BREAD</b>, returned after 3 backers or 14 days.
             </p>
             <div className="mt-4 flex items-center justify-between rounded-xl bg-muted px-4 py-3 text-sm">
               <span className="text-muted-foreground">Your balance</span>

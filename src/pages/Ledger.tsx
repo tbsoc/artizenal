@@ -169,7 +169,7 @@ export function Ledger() {
     <div className="space-y-8">
       <SectionTitle
         title="Public ledger"
-        sub="Every donation, fund gift, yield split and matching payout on Artizenal, open to anyone. In the real version this would be verifiable onchain. Here it's the simulated world's full record."
+        sub="Every money movement, open to anyone."
         action={
           <Button variant="outline" onClick={download}>
             <Download size={15} /> Download CSV
@@ -179,13 +179,13 @@ export function Ledger() {
 
       <div className="grid grid-cols-4 gap-4">
         <Card className="p-5">
-          <Stat label="Donated to projects" value={<Bread value={sum("donation", "BREAD")} />} sub={`+ ${num(sum("donation", "USDC"))} USDC, not matched`} />
+          <Stat label="Donated to projects" value={<Bread value={sum("donation", "BREAD")} />} sub={`+ ${num(sum("donation", "USDC"))} USDC`} />
         </Card>
         <Card className="p-5">
-          <Stat label="Given to funds" value={<Bread value={sum("fund-gift")} />} sub="pledges, reserves and round pools" />
+          <Stat label="Given to funds" value={<Bread value={sum("fund-gift")} />} />
         </Card>
         <Card className="p-5">
-          <Stat label="Yield shared to funds" value={<Bread value={sum("yield")} />} sub="from reserve interest only" />
+          <Stat label="Yield shared to funds" value={<Bread value={sum("yield")} />} />
         </Card>
         <Card className="p-5">
           <Stat label="Matching paid out" value={<Bread value={sum("match")} />} sub={`across ${state.campaigns.filter((c) => c.settled).length} closed rounds`} />

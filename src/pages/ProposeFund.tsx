@@ -37,8 +37,7 @@ export function ProposeFund() {
         </div>
         <h1 className="mt-5 font-display text-3xl font-semibold">Proposing a fund takes {num(PROPOSE_MIN_POINTS)} points earned</h1>
         <p className="mt-3 text-muted-foreground">
-          Curators are members who've shown up for the community. You have earned <Pts value={pts} className="font-semibold text-foreground" /> so far. Back projects, give to
-          funds or invite friends to earn the rest.
+          You've earned <Pts value={pts} className="font-semibold text-foreground" />.
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <LinkButton href="#/points">How to earn points</LinkButton>
@@ -67,10 +66,7 @@ export function ProposeFund() {
     <div className="grid grid-cols-[1fr_380px] gap-10">
       <div>
         <h1 className="font-display text-[40px] font-semibold tracking-tight">Propose a fund</h1>
-        <p className="mt-1 max-w-2xl text-muted-foreground">
-          Pick a focus and a matching formula. Your fund launches once members pledge enough BREAD and put enough points behind it. After that it gets a share of
-          the yield every season.
-        </p>
+        <p className="mt-1 text-muted-foreground">Launches once it hits its BREAD and points goals.</p>
         <div className="mt-8 space-y-6">
           <Card className="space-y-5 p-6">
             <Field label="Fund name">
@@ -88,7 +84,7 @@ export function ProposeFund() {
                 </Select>
               </Field>
               <Field label="Description">
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Who is it for, how will you pick projects, who else will curate?" />
+                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Who it's for and how you'll pick projects" />
               </Field>
             </div>
           </Card>
@@ -133,10 +129,10 @@ export function ProposeFund() {
           <Card className="p-6">
             <div className="text-sm font-semibold">Launch conditions</div>
             <div className="mt-4 grid grid-cols-3 gap-4">
-              <Field label="Pledge goal (BREAD)" hint="Becomes the fund's first reserve">
+              <Field label="Pledge goal (BREAD)">
                 <Input type="number" value={pledgeGoal} onChange={(e) => setPledgeGoal(Math.max(0, Number(e.target.value)))} />
               </Field>
-              <Field label="Points goal" hint="Total points members must give">
+              <Field label="Points goal">
                 <Input type="number" value={backingGoal} onChange={(e) => setBackingGoal(Math.max(0, Number(e.target.value)))} />
               </Field>
               <Field label="Your own pledge (BREAD)" hint={`Earns ${POINT_RULES.perFundBread} pts per BREAD`}>

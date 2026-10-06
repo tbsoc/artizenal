@@ -3,8 +3,8 @@ import { ArtizenBadge, Avatar, Bread, Card, LinkButton, Loaf, SectionTitle } fro
 import { CampaignRow, FundCard, ProjectCard } from "@/components/cards"
 import { Cover } from "@/components/Cover"
 import { START_USDC } from "@/lib/seed"
-import { ME, campaignStatus, dailyYield, getUser, totalSupply, useStore } from "@/lib/store"
-import { compact, cn, dayLabel, num } from "@/lib/utils"
+import { ME, campaignStatus, getUser, totalSupply, useStore } from "@/lib/store"
+import { compact, cn, dayLabel } from "@/lib/utils"
 
 function Engine() {
   const { state } = useStore()
@@ -14,23 +14,21 @@ function Engine() {
   const pct = ((state.day - state.seasonStartDay) / state.seasonLength) * 100
   return (
     <Card className="relative overflow-hidden p-6">
-      <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">The commons engine</div>
+      <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Matching pool</div>
       <div className="mt-4 grid grid-cols-2 gap-5">
         <div>
           <div className="text-xs text-muted-foreground">BREAD in circulation</div>
           <div className="mt-1 font-display text-3xl font-semibold">{compact(totalSupply(state))}</div>
-          <div className="text-xs text-muted-foreground">each backed 1:1 by USDC in reserve</div>
         </div>
         <div>
-          <div className="text-xs text-muted-foreground">Reserve interest</div>
+          <div className="text-xs text-muted-foreground">Interest (APY)</div>
           <div className="mt-1 font-display text-3xl font-semibold">{(state.apy * 100).toFixed(1)}%</div>
-          <div className="text-xs text-muted-foreground">≈ {num(dailyYield(state))} BREAD a day for matching</div>
         </div>
       </div>
       <div className="mt-6 rounded-2xl bg-muted p-4">
         <div className="flex items-baseline justify-between">
           <div className="text-sm font-semibold">Season {state.season} yield so far</div>
-          <div className="text-xs text-muted-foreground">shared out in {left} days</div>
+          <div className="text-xs text-muted-foreground">{left} days left</div>
         </div>
         <Bread value={state.yieldPool} className="mt-1 font-display text-4xl font-semibold text-community" />
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-card">
@@ -38,7 +36,7 @@ function Engine() {
         </div>
       </div>
       <div className="mt-4 flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">Matching live in {live.length} rounds right now</span>
+        <span className="text-muted-foreground">Live in {live.length} rounds</span>
         <Bread value={livePool} className="font-semibold" />
       </div>
     </Card>
@@ -48,9 +46,9 @@ function Engine() {
 function Checklist() {
   const { state } = useStore()
   const steps = [
-    { done: state.me.usdc < START_USDC, label: "Convert USDC into BREAD", href: "#/wallet" },
-    { done: state.donations.some((d) => d.from === ME && d.campaignId), label: "Back a project in a live round", href: "#/f/artizen-rescue" },
-    { done: state.pointGifts.some((g) => g.userId === ME), label: "Give points to a fund", href: "#/allocate" },
+    { done: state.me.usdc < START_USDC, label: "Get BREAD", href: "#/wallet" },
+    { done: state.donations.some((d) => d.from === ME && d.campaignId), label: "Back a project", href: "#/f/artizen-rescue" },
+    { done: state.pointGifts.some((g) => g.userId === ME), label: "Give points", href: "#/allocate" },
     { done: state.users.some((u) => u.referredBy === ME), label: "Invite a friend", href: "#/points" },
     { done: state.projects.some((p) => p.creatorId === ME), label: "Start a project", href: "#/new" },
   ]
@@ -59,8 +57,8 @@ function Checklist() {
   return (
     <Card className="flex items-center gap-6 px-6 py-4">
       <div className="shrink-0">
-        <div className="text-sm font-semibold">Try the full loop</div>
-        <div className="text-xs text-muted-foreground">{n} of {steps.length} done</div>
+        <div className="text-sm font-semibold">Onboarding</div>
+        <div className="text-xs text-muted-foreground">{n}/{steps.length}</div>
       </div>
       <div className="flex flex-1 flex-wrap gap-2">
         {steps.map((s) => (
@@ -82,10 +80,10 @@ function Checklist() {
 }
 
 const FLOW = [
-  { icon: Landmark, title: "USDC in", text: "Members convert USDC into BREAD, 1:1. They can turn it back any time." },
-  { icon: Sprout, title: "Reserves earn", text: "The USDC behind BREAD sits in safe, interest-bearing reserves." },
-  { icon: Vote, title: "Points steer", text: "Members give points to funds. A fund's share of the yield is its points ÷ all points." },
-  { icon: HandCoins, title: "Rounds match", text: "Funds use it to match BREAD donations to projects in their rounds." },
+  { icon: Landmark, title: "Hold BREAD", text: "Convert USDC 1:1. Redeem any time." },
+  { icon: Sprout, title: "Reserves earn", text: "The USDC behind BREAD earns interest." },
+  { icon: Vote, title: "Points split it", text: "Funds get yield in proportion to points given." },
+  { icon: HandCoins, title: "Rounds match", text: "Funds match BREAD donations to projects." },
 ]
 
 export function Home() {
@@ -113,8 +111,7 @@ export function Home() {
               Artizen closed. <span className="text-wheat">The projects didn't.</span>
             </h1>
             <p className="mt-5 max-w-lg text-[17px] leading-relaxed text-background/75">
-              Artizenal is community-matched funding run as a cooperative. The interest on our shared reserves becomes matching money, and members decide
-              where it goes.
+              Community-matched funding, run as a cooperative. Interest on shared reserves pays for matching.
             </p>
           </div>
           <div className="relative mt-10 flex gap-3">
@@ -132,16 +129,13 @@ export function Home() {
       <Checklist />
 
       <section>
-        <SectionTitle title="How the money moves" sub="BREAD is the Bread Cooperative's community currency, created 1:1 from USDC. While you hold it, it funds the commons." />
+        <SectionTitle title="How it works" />
         <div className="grid grid-cols-4 gap-4">
           {FLOW.map((f, i) => (
             <div key={f.title} className="relative">
               <Card className="h-full p-5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-wheat/30 text-crust">
-                    <f.icon size={19} />
-                  </div>
-                  <div className="text-xs font-semibold text-muted-foreground">Step {i + 1}</div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-wheat/30 text-crust">
+                  <f.icon size={19} />
                 </div>
                 <div className="mt-4 font-semibold">{f.title}</div>
                 <div className="mt-1 text-sm text-muted-foreground">{f.text}</div>
@@ -156,7 +150,7 @@ export function Home() {
 
       <section className="grid grid-cols-[1.5fr_1fr] gap-8">
         <div>
-          <SectionTitle title="Rounds open now" sub="Donate BREAD to projects in a round and the fund's matching pool adds more on top." action={<LinkButton href="#/funds" variant="ghost" size="sm">All funds <ArrowRight size={14} /></LinkButton>} />
+          <SectionTitle title="Rounds open now" action={<LinkButton href="#/funds" variant="ghost" size="sm">All funds <ArrowRight size={14} /></LinkButton>} />
           <div className="space-y-3">
             {live.map((c) => (
               <CampaignRow key={c.id} campaign={c} />
@@ -164,7 +158,7 @@ export function Home() {
           </div>
         </div>
         <div>
-          <SectionTitle title="Happening now" />
+          <SectionTitle title="Activity" />
           <Card className="divide-y divide-border">
             {state.activity.slice(0, 8).map((a) => {
               const u = getUser(state, a.userId)
@@ -190,7 +184,7 @@ export function Home() {
               Rehoming Artizen projects <ArtizenBadge />
             </span>
           }
-          sub="These projects were live on Artizen when it shut down. Many lost matching they had already earned."
+          sub="Live on Artizen when it shut down."
           action={<LinkButton href="#/projects?artizen=1" variant="ghost" size="sm">See all alumni <ArrowRight size={14} /></LinkButton>}
         />
         <div className="grid grid-cols-4 gap-5">
@@ -203,7 +197,6 @@ export function Home() {
       <section>
         <SectionTitle
           title="Funds"
-          sub="Funds are run by curators and backed by members' points. Each fund picks the matching formula that suits its community."
           action={<LinkButton href="#/propose" variant="outline" size="sm"><Sparkles size={14} /> Propose a fund</LinkButton>}
         />
         <div className="grid grid-cols-3 gap-5">

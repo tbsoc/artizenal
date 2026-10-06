@@ -125,7 +125,7 @@ export function DonateModal({
                   {c === "BREAD" ? "Give BREAD" : "Give USDC"}
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  {c === "BREAD" ? `Counts for matching · ${POINT_RULES.perBread} pts per BREAD` : `Not matched · ${POINT_RULES.perUsdc} pts per USDC`}
+                  {c === "BREAD" ? `Matched · ${POINT_RULES.perBread} pts each` : `Not matched · ${POINT_RULES.perUsdc} pts each`}
                 </div>
               </button>
             ))}
@@ -163,7 +163,7 @@ export function DonateModal({
           {currency === "BREAD" && (
             <>
               {liveCampaigns.length > 0 ? (
-                <Field label="Count toward round">
+                <Field label="Round">
                   <Select value={campaignId} onChange={(e) => setCampaignId(e.target.value)}>
                     {liveCampaigns.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -175,7 +175,7 @@ export function DonateModal({
               ) : (
                 <div className="flex gap-2 rounded-xl bg-muted px-4 py-3 text-sm text-muted-foreground">
                   <Info size={16} className="mt-0.5 shrink-0" />
-                  This project isn't in a live matching round right now. Your BREAD still goes straight to the project.
+                  Not in a live round, so this gift won't be matched.
                 </div>
               )}
               {campaign && fund && (
@@ -191,8 +191,7 @@ export function DonateModal({
                     )}
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground">
-                    {MECHANISM_INFO[fund.mechanism.type].explain}
-                    {fund.mechanism.type === "qf" && " This is an estimate at today's rate. Final matches are set when the round closes."}
+                    {fund.mechanism.type === "qf" ? "Estimate. Final matches are set when the round closes." : MECHANISM_INFO[fund.mechanism.type].name}
                   </div>
                 </div>
               )}
@@ -224,7 +223,7 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
   const submit = () => {
     const r = actions.donateFund(fund.id, amount, proposed ? undefined : target || undefined)
     if (!r.ok) return toast(r.error, "err")
-    toast(`+${num(amount * POINT_RULES.perFundBread)} points. Thanks for growing ${fund.name}!`)
+    toast(`+${num(amount * POINT_RULES.perFundBread)} points. Thanks!`)
     onClose()
   }
 
@@ -233,9 +232,9 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
       <div className="space-y-5">
         <p className="text-sm text-muted-foreground">
           {proposed
-            ? "Pledges are held until the fund reaches both its pledge goal and its points goal. Then they become its first matching reserve."
-            : "Gifts to a fund become matching money. Every BREAD you add here is multiplied across the projects in the round."}{" "}
-          You earn <b className="text-coop-ink">{POINT_RULES.perFundBread} points per BREAD</b>, double what a project donation earns.
+            ? "Held until the fund launches, then used for matching."
+            : "Becomes matching money for the fund's rounds."}{" "}
+          <b className="text-coop-ink">{POINT_RULES.perFundBread} points per BREAD.</b>
         </p>
         <div className="flex gap-2">
           {[25, 50, 100, 250, 500].map((p) => (
@@ -253,14 +252,14 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
           <Input type="number" value={amount || ""} onChange={(e) => setAmount(Math.max(0, Number(e.target.value)))} className="h-10 w-28" />
         </div>
         {!proposed && (
-          <Field label="Where should it go?">
+          <Field label="To">
             <Select value={target} onChange={(e) => setTarget(e.target.value)}>
               {live.map((c) => (
                 <option key={c.id} value={c.id}>
-                  Top up {c.name}'s matching pool ({campaignStatus(c, state.day)})
+                  {c.name} matching pool
                 </option>
               ))}
-              <option value="">Fund reserve (curators assign it to future rounds)</option>
+              <option value="">Fund reserve</option>
             </Select>
           </Field>
         )}
@@ -300,7 +299,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
           <div>
             <div className="font-display text-2xl font-semibold">Your basket</div>
-            <div className="text-sm text-muted-foreground">Back several projects in one go and see the match you unlock.</div>
+            
           </div>
           <button onClick={onClose} className="rounded-full p-1.5 text-muted-foreground hover:bg-muted cursor-pointer" aria-label="Close basket">
             <X size={18} />
@@ -310,7 +309,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
           {groups.length === 0 && (
             <div className="py-16 text-center text-sm text-muted-foreground">
               <ShoppingBasket className="mx-auto mb-3 text-border" size={40} />
-              Collect projects from a live round on any fund page.
+              Collect projects from any live round.
             </div>
           )}
           {groups.map(([cid, items], gi) => {
@@ -393,17 +392,17 @@ const PRINCIPLES = [
   {
     icon: ScrollText,
     title: "Fully auditable",
-    text: "Every donation, fund gift, yield split and matching payout is recorded on a public ledger. Anyone can check where money came from and where it went.",
+    text: "Every donation, yield split and payout is on a public ledger.",
   },
   {
     icon: Scale,
     title: "Realistic matching",
-    text: "Matching pools only hold money that already exists: interest the reserves have earned, plus gifts to funds. Nothing is promised that isn't in hand.",
+    text: "Pools only hold money that already exists. Nothing is promised that isn't in hand.",
   },
   {
     icon: ShieldCheck,
-    title: "Your funds aren't put at risk",
-    text: "Only the interest is used for matching. The USDC behind BREAD is never spent, and anyone can redeem their BREAD 1:1 at any time.",
+    title: "Funds aren't put at risk",
+    text: "Only interest pays for matching. BREAD is redeemable 1:1 any time.",
   },
 ]
 
@@ -424,12 +423,11 @@ export function AboutContent() {
         </div>
       </div>
       <p className="text-[15px] leading-relaxed text-foreground/85">
-        Artizen recently announced that it is closing down. Many artists, scientists and organizers lost matching they were counting on, some of them in the
-        middle of a round. We're the{" "}
+        Artizen recently announced it is closing down, and many projects lost matching they were counting on. We're the{" "}
         <a href="https://bread.coop" target="_blank" rel="noreferrer" className="font-semibold text-[#EA5817] hover:underline">
           Bread Cooperative
         </a>
-        , and Artizenal is our attempt to show what an alternative could look like if it worked differently, built on our own tools.
+        , and this is our take on an alternative that works differently.
       </p>
       <div className="space-y-3">
         {PRINCIPLES.map((p) => (
@@ -445,8 +443,7 @@ export function AboutContent() {
         ))}
       </div>
       <p className="rounded-xl border border-dashed border-border px-4 py-3 text-xs text-muted-foreground">
-        This is a showcase, not a live platform. Every balance, donation and payout is simulated in your browser, and nothing real moves. The projects and people
-        are examples.
+        A showcase: everything is simulated in your browser. Projects and people are examples.
       </p>
     </div>
   )
@@ -458,7 +455,7 @@ export function AboutModal({ open, onClose }: { open: boolean; onClose: () => vo
       <AboutContent />
       <div className="mt-6 flex justify-end gap-2">
         <a href="#/ledger" onClick={onClose} className="inline-flex h-10 items-center rounded-full px-4 text-sm font-semibold hover:bg-muted">
-          Open the public ledger
+          Public ledger
         </a>
         <Button variant="dark" onClick={onClose}>
           Got it
@@ -481,76 +478,45 @@ export function Onboarding() {
           <AboutContent />
           <div className="mt-6 flex justify-end">
             <Button size="lg" onClick={() => setStep("join")}>
-              Try the showcase <ArrowRight size={16} />
+              Continue <ArrowRight size={16} />
             </Button>
           </div>
         </div>
       </div>
     )
-  const sample = state.users.find((u) => u.id === "maya")
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-6 backdrop-blur-sm">
-      <div className="pop-in grid w-full max-w-[880px] grid-cols-[1fr_1.1fr] overflow-hidden rounded-3xl bg-card shadow-2xl">
-        <div className="relative bg-foreground p-10 text-background">
-          <div className="absolute inset-0 opacity-30">
-            <Cover seed={7} />
-          </div>
-          <div className="relative">
-            <div className="font-display text-3xl font-semibold">Artizenal</div>
-            <p className="mt-6 font-display text-[26px] leading-snug">
-              Funding for artists, scientists and builders, matched by the community.
-            </p>
-            <ul className="mt-8 space-y-3 text-sm text-background/80">
-              <li>• Convert USDC into BREAD, 1:1. The interest on the reserves pays for matching.</li>
-              <li>• Back projects in live rounds. Small gifts unlock big matches.</li>
-              <li>• Earn points, then use them to steer where the yield goes.</li>
-            </ul>
-            <p className="mt-10 text-xs text-background/60">
-              This is a live simulation and nothing real moves. Your wallet starts with some USDC and BREAD so you can try everything.
-            </p>
-          </div>
+      <form
+        className="pop-in w-full max-w-[440px] space-y-5 rounded-3xl bg-card p-8 shadow-2xl"
+        onSubmit={(e) => {
+          e.preventDefault()
+          actions.onboard(name, code || undefined)
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <BreadLogo size={30} />
+          <h2 className="font-display text-2xl font-semibold">Join Artizenal</h2>
         </div>
-        <form
-          className="space-y-5 p-10"
-          onSubmit={(e) => {
-            e.preventDefault()
-            actions.onboard(name, code || undefined)
-          }}
+        <Field label="Name">
+          <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Sam Baker" />
+        </Field>
+        <Field
+          label="Invite code (optional)"
+          hint={
+            <>
+              Try <button type="button" className="font-semibold text-primary underline cursor-pointer" onClick={() => setCode("MAYA")}>MAYA</button>
+            </>
+          }
         >
-          <div>
-            <h2 className="font-display text-2xl font-semibold">Pull up a chair</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Pick a display name to get started.</p>
-          </div>
-          <Field label="Your name">
-            <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Sam Baker" />
-          </Field>
-          <Field
-            label="Invite code (optional)"
-            hint={
-              <>
-                Try <button type="button" className="font-semibold text-primary underline cursor-pointer" onClick={() => setCode("MAYA")}>MAYA</button> to see
-                how referrals work: {sample?.name.split(" ")[0]} earns {POINT_RULES.referral} points, plus 10% of every point you earn.
-              </>
-            }
-          >
-            <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="MAYA" />
-          </Field>
-          <div className="rounded-2xl bg-coop-ink/6 p-4 text-sm">
-            <div className="flex items-center gap-2 font-semibold text-coop-ink">
-              <Sparkles size={16} /> {POINT_RULES.welcome} welcome points
-            </div>
-            <div className="mt-1 text-muted-foreground">
-              Points are your voice on Artizenal. You can't buy or sell them. Each season you give them to the funds you believe in, and that decides where the yield goes.
-            </div>
-          </div>
-          <Button size="lg" className="w-full" type="submit" disabled={!name.trim()}>
-            Enter Artizenal <ArrowRight size={16} />
-          </Button>
-          <div className="text-center text-xs text-muted-foreground">
-            Demo world: day {state.day}, season {state.season}. {state.users.length} members, {state.projects.length} projects.
-          </div>
-        </form>
-      </div>
+          <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="MAYA" />
+        </Field>
+        <div className="flex items-center gap-2 text-sm text-coop-ink">
+          <Sparkles size={15} /> {POINT_RULES.welcome} welcome points, plus some USDC and BREAD to try things with
+        </div>
+        <Button size="lg" className="w-full" type="submit" disabled={!name.trim()}>
+          Enter <ArrowRight size={16} />
+        </Button>
+      </form>
     </div>
   )
 }

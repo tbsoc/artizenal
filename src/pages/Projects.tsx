@@ -42,7 +42,7 @@ export function Projects({ query }: { query: URLSearchParams }) {
     <div>
       <SectionTitle
         title="Projects"
-        sub={`${state.projects.length} projects from artists, scientists and organizers. Every project puts down a small refundable deposit to keep spam out.`}
+        sub={`${state.projects.length} projects`}
         action={
           <LinkButton href="#/new" size="md">
             <Plus size={16} /> Start a project

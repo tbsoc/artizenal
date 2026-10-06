@@ -1,8 +1,8 @@
 import { useState } from "react"
-import { Info, RotateCcw } from "lucide-react"
+import { RotateCcw } from "lucide-react"
 import { Badge, Bread, Button, Card, Pts, SectionTitle, Stat, Stepper, MechanismBadge, PointsTabs } from "@/components/ui"
 import { Cover } from "@/components/Cover"
-import { ME, dailyYield, fundTotalPoints, getFund, pointsBalance, pointsGiven, seasonRatios, useStore } from "@/lib/store"
+import { ME, dailyYield, fundTotalPoints, getFund, pointsBalance, seasonRatios, useStore } from "@/lib/store"
 import { cn, num } from "@/lib/utils"
 
 const BAR_COLORS = ["#d9762b", "#2f8f6b", "#3d5a99", "#b5466b", "#8a6d2b", "#6b4ea0", "#2a8d9d", "#a05a2c"]
@@ -117,17 +117,17 @@ export function Allocate() {
       <PointsTabs active="give" />
       <SectionTitle
         title="Points"
-        sub="All BREAD reserves earn interest. Each season, members give points to the funds they want to grow. A fund's share of the season's yield is its points divided by all the points given. Points you give are spent, and the tally starts fresh every season."
+        sub="A fund's share of the season's yield = its points ÷ all points given. Given points are spent."
       />
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <Card className="col-span-2 flex items-center gap-8 p-6">
           <div>
             <div className="text-xs text-muted-foreground">Season {state.season} yield so far</div>
             <Bread value={state.yieldPool} className="mt-1 font-display text-[42px] leading-none font-semibold text-community" />
             <div className="mt-2 text-xs text-muted-foreground">
-              ≈ {num(seasonEstimate)} BREAD by season end · {daysLeft} days left
+              ≈ {num(seasonEstimate)} by season end · {daysLeft} days left
             </div>
           </div>
           <div className="flex-1">
@@ -137,18 +137,10 @@ export function Allocate() {
                 return <div key={i} className={cn("flex-1 rounded-sm", done ? "bg-community" : "bg-muted")} style={{ height: `${20 + (i / state.seasonLength) * 80}%` }} />
               })}
             </div>
-            <div className="mt-1 text-right text-[11px] text-muted-foreground">Yield builds up day by day</div>
           </div>
         </Card>
         <Card className="p-6">
-          <Stat label="Points given this season" value={<Pts value={now.total} />} sub="by all members, to active funds" />
-        </Card>
-        <Card className="p-6">
-          <Stat
-            label="Shared out all-time"
-            value={<Bread value={state.distributions.reduce((a, d) => a + d.total, 0)} />}
-            sub={`${state.distributions.length} season${state.distributions.length === 1 ? "" : "s"} so far`}
-          />
+          <Stat label="Points given this season" value={<Pts value={now.total} />} />
         </Card>
       </div>
 
@@ -158,7 +150,7 @@ export function Allocate() {
             <div>
               <div className="font-semibold">Give points</div>
               <div className="text-sm text-muted-foreground">
-                You have <Pts value={balance} className="font-semibold text-foreground" /> to give · {num(pointsGiven(state, ME, state.season))} given this season
+                You have <Pts value={balance} className="font-semibold text-foreground" /> to give
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -171,14 +163,12 @@ export function Allocate() {
             </div>
           </div>
           <div className="flex items-center gap-4 border-b border-border px-5 py-4">
-            <div className="text-sm font-semibold">Points to give this season</div>
+            <div className="text-sm font-semibold">Amount</div>
             <Stepper value={toGive} onChange={setBudget} step={50} max={balance} label="Points to give" />
             <Button variant="outline" size="sm" onClick={() => setBudget(balance)} disabled={toGive === balance}>
               All
             </Button>
-            <div className="ml-auto max-w-[280px] text-right text-xs text-muted-foreground">
-              Use − and + on each fund to set your ratio. Your points are split across funds in that ratio.
-            </div>
+            <div className="ml-auto text-xs text-muted-foreground">Set a ratio with − and +</div>
           </div>
           <div className="grid grid-cols-[minmax(0,1.4fr)_120px_minmax(0,1.5fr)_130px] gap-5 px-5 pt-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             <div>Active funds</div>
@@ -190,14 +180,14 @@ export function Allocate() {
           {proposed.length > 0 && (
             <>
               <div className="border-t border-border px-5 pt-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                Proposed funds: points add up across seasons until the fund launches
+                Proposed funds
               </div>
               <div className="divide-y divide-border">{proposed.map((f) => row(f.id))}</div>
             </>
           )}
           {balance <= 0 && (
             <div className="border-t border-border px-5 py-4 text-sm text-muted-foreground">
-              You've given all your points. <a href="#/points" className="font-semibold text-primary hover:underline">Earn more</a> by backing projects or inviting friends.
+              No points left. <a href="#/points" className="font-semibold text-primary hover:underline">Earn more</a>
             </div>
           )}
         </Card>
@@ -206,7 +196,7 @@ export function Allocate() {
           <Card className="p-5">
             <div className="text-sm font-semibold">Season {state.season} split{drafted > 0 && " (with your gift)"}</div>
             <div className="mt-1 text-xs text-muted-foreground">
-              {after.total ? `Share = fund's points ÷ ${num(after.total)} total points` : "No points given yet this season. Until some are, the yield would be split evenly."}
+              {after.total ? `${num(after.total)} points given` : "No points given yet."}
             </div>
             <div className="mt-4 flex h-5 overflow-hidden rounded-full">
               {active.map((f) => (
@@ -232,7 +222,7 @@ export function Allocate() {
           </Card>
           {myGifts.length > 0 && (
             <Card className="p-5">
-              <div className="text-sm font-semibold">Your gifts this season</div>
+              <div className="text-sm font-semibold">Your gifts</div>
               <div className="mt-3 space-y-2 text-sm">
                 {myGifts.map((g) => (
                   <div key={g.id} className="flex items-center justify-between gap-3">
@@ -243,13 +233,6 @@ export function Allocate() {
               </div>
             </Card>
           )}
-          <Card className="flex gap-3 p-5 text-sm text-muted-foreground">
-            <Info size={18} className="mt-0.5 shrink-0 text-coop-ink" />
-            <div>
-              When the season closes, each fund gets its share. Funds with <b className="text-foreground">auto-stream</b> on send it straight into their live
-              rounds. Use the <b className="text-foreground">day counter</b> in the header to skip ahead and watch it happen.
-            </div>
-          </Card>
         </div>
       </div>
 

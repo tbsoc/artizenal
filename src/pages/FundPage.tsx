@@ -76,8 +76,8 @@ function GivePoints({ fund }: { fund: Fund }) {
         {fund.status === "active"
           ? val > 0
             ? `This fund's share of the season's yield would become ${(ratioAfter * 100).toFixed(1)}%.`
-            : "Given points are spent and count toward this season's split."
-          : "Given points are spent and count toward the launch goal."}
+            : "Given points are spent."
+          : "Counts toward the launch goal."}
         {mine > 0 && ` You've given ${num(mine)}${fund.status === "active" ? " this season" : ""}.`}
       </div>
     </div>
@@ -100,7 +100,7 @@ function StartCampaignModal({ fund, open, onClose }: { fund: Fund; open: boolean
         <Field label="Round name">
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Autumn Open Call" />
         </Field>
-        <Field label="What is it for?">
+        <Field label="Description">
           <Textarea value={blurb} onChange={(e) => setBlurb(e.target.value)} className="min-h-20" />
         </Field>
         <div className="grid grid-cols-3 gap-4">
@@ -212,18 +212,17 @@ function CampaignPanel({ campaign, fund }: { campaign: Campaign; fund: Fund }) {
           <Stat label="Matching pool" value={<Bread value={campaign.matchingPool} />} />
           <Stat label="Donated in BREAD" value={<Bread value={totalGiven} />} sub={`${new Set(contribs.map((c) => c.donor)).size} donors`} />
           {status === "ended" ? (
-            <Stat label="Matched" value={<Bread value={totalMatch} className="text-community" />} sub="paid out to projects" />
+            <Stat label="Matched" value={<Bread value={totalMatch} className="text-community" />} />
           ) : fund.mechanism.type === "qf" ? (
             <Stat
-              label="Match per BREAD so far"
+              label="Match per BREAD"
               value={<span className="text-community">{totalGiven ? (campaign.matchingPool / totalGiven).toFixed(2) : "–"}×</span>}
-              sub="QF always shares out the full pool"
             />
           ) : (
             <Stat
               label="Pool claimed"
               value={<span className="text-community">{Math.round(Math.min(1, demand / campaign.matchingPool) * 100)}%</span>}
-              sub={coverage < 1 ? `Over-subscribed: matches scaled to ${Math.round(coverage * 100)}%` : `${num(campaign.matchingPool - demand)} BREAD of matching left`}
+              sub={coverage < 1 ? `Scaled to ${Math.round(coverage * 100)}%` : `${num(campaign.matchingPool - demand)} left`}
             />
           )}
           <Stat
@@ -274,12 +273,6 @@ function CampaignPanel({ campaign, fund }: { campaign: Campaign; fund: Fund }) {
             ))}
           </tbody>
         </table>
-        {fund.mechanism.type === "qf" && (
-          <div className="border-t border-border bg-muted/40 px-5 py-3 text-xs text-muted-foreground">
-            Under quadratic funding, a project's match tracks the square of the sum of square roots of its donations. In practice: count matters more than size.
-            Compare donors and matches above.
-          </div>
-        )}
       </Card>
 
       <div className="grid grid-cols-3 gap-5">
@@ -293,7 +286,7 @@ function CampaignPanel({ campaign, fund }: { campaign: Campaign; fund: Fund }) {
 }
 
 export function FundPage({ id, query }: { id: string; query: URLSearchParams }) {
-  const { state, actions, toast } = useStore()
+  const { state, actions } = useStore()
   const fund = getFund(state, id)
   const [giveOpen, setGiveOpen] = useState(false)
   const [startOpen, setStartOpen] = useState(false)
@@ -310,11 +303,9 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
   const backing = fund.status === "active" ? fundSeasonPoints(state, fund.id) : fundTotalPoints(state, fund.id)
   const ratios = seasonRatios(state)
   const share = ratios.ratio[fund.id] ?? 0
-  const yieldReceived = state.distributions.reduce((a, d) => a + (d.shares[fund.id] ?? 0), 0)
   const livePool = campaigns.filter((c) => campaignStatus(c, state.day) === "live").reduce((a, c) => a + c.matchingPool, 0)
   const pledged = fundPledged(state, fund.id)
   const isCurator = fund.curators.includes(ME)
-  const proposer = getUser(state, fund.proposedBy)
 
   return (
     <div>
@@ -357,21 +348,15 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
       </div>
 
       {fund.status === "active" ? (
-        <div className="mt-6 grid grid-cols-5 gap-4">
+        <div className="mt-6 grid grid-cols-3 gap-4">
           <Card className="p-5">
             <Stat label="Live matching" value={<Bread value={livePool} />} />
           </Card>
           <Card className="p-5">
-            <Stat label="Reserve" value={<Bread value={fund.reserve} />} sub="for future rounds" />
+            <Stat label="Reserve" value={<Bread value={fund.reserve} />} />
           </Card>
           <Card className="p-5">
-            <Stat label="Points this season" value={<Pts value={backing} />} sub={`${num(backing)} ÷ ${num(ratios.total)} = ${(share * 100).toFixed(1)}% of yield`} />
-          </Card>
-          <Card className="p-5">
-            <Stat label="Next yield share (est.)" value={<Bread value={state.yieldPool * share} />} sub="grows daily until season end" />
-          </Card>
-          <Card className="p-5">
-            <Stat label="Yield received" value={<Bread value={yieldReceived} />} sub={`over ${state.distributions.filter((d) => d.shares[fund.id]).length} season(s)`} />
+            <Stat label="Points this season" value={<Pts value={backing} />} sub={`${(share * 100).toFixed(1)}% of this season's yield`} />
           </Card>
         </div>
       ) : (
@@ -434,7 +419,7 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
               {fund.status === "proposed"
                 ? "Rounds open once the fund launches."
                 : isCurator
-                  ? "No rounds yet. Launch the first one!"
+                  ? "No rounds yet."
                   : "No rounds yet. Curators will open one soon."}
             </Empty>
           )}
@@ -448,15 +433,11 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
                 <p key={i}>{p}</p>
               ))}
             </div>
-            <div className="mt-4 text-xs text-muted-foreground">
-              Proposed by {fund.proposedBy === ME ? "you" : proposer?.name} on day {fund.createdDay}
-            </div>
           </Card>
           {fund.status === "active" && <GivePoints fund={fund} />}
           <Card className="p-5">
             <div className="text-sm font-semibold">{MECHANISM_INFO[fund.mechanism.type].name}</div>
             <div className="mt-1 text-xs font-medium text-coop-ink">{mechanismLabel(fund.mechanism)}</div>
-            <p className="mt-2 text-sm text-muted-foreground">{MECHANISM_INFO[fund.mechanism.type].explain}</p>
           </Card>
           {isCurator && fund.status === "active" && (
             <Card className="p-5">
@@ -466,29 +447,12 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
               <label className="mt-3 flex cursor-pointer items-start gap-3 text-sm">
                 <input type="checkbox" checked={fund.autoStream} onChange={() => actions.toggleAutoStream(fund.id)} className="mt-0.5 h-4 w-4 accent-[var(--primary)]" />
                 <span>
-                  <span className="font-medium">Send yield straight to live rounds</span>
-                  <span className="block text-xs text-muted-foreground">Otherwise it goes to the reserve and you assign it to a round yourself.</span>
-                </span>
+                  <span className="font-medium">Send yield to live rounds</span>
+                                  </span>
               </label>
               <Button size="sm" variant="outline" className="mt-4 w-full" onClick={() => setStartOpen(true)}>
-                <Rocket size={14} /> Launch a round from reserve
+                <Rocket size={14} /> New round
               </Button>
-            </Card>
-          )}
-          {!isCurator && fund.status === "active" && (
-            <Card className="p-5 text-sm text-muted-foreground">
-              <div className="font-semibold text-foreground">Where this fund's yield goes</div>
-              <div className="mt-1">
-                {fund.autoStream
-                  ? "This fund's share of each season's yield tops up its live rounds automatically."
-                  : "Curators hold this fund's yield in reserve and assign it to rounds by hand."}
-              </div>
-              <button
-                className="mt-3 text-xs font-semibold text-primary hover:underline cursor-pointer"
-                onClick={() => toast("Curator tools unlock when you propose your own fund.")}
-              >
-                How do I become a curator?
-              </button>
             </Card>
           )}
         </aside>

@@ -47,7 +47,7 @@ function SimClock() {
           <div className="pop-in absolute right-0 z-40 mt-2 w-80 rounded-2xl border border-border bg-card p-4 shadow-xl">
             <div className="text-xs font-semibold tracking-wide text-coop-ink uppercase">Demo time machine</div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Move time forward to watch yield build up, rounds close and matches pay out. Other members keep donating while you skip ahead.
+              Skip ahead to see yield build up and rounds pay out.
             </p>
             <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-muted p-3 text-center text-xs">
               <div>
@@ -167,9 +167,9 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-[1280px] items-center justify-between px-8 py-8 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
-            <BreadLogo size={16} /> Artizenal is a showcase built on the Bread Cooperative stack. Everything here is simulated and nothing real moves.
+            <BreadLogo size={16} /> A Bread Cooperative showcase. Everything is simulated.
           </div>
-          <div>Made for the projects Artizen left behind.</div>
+          
         </div>
       </footer>
 

@@ -7,31 +7,31 @@ import { num } from "@/lib/utils"
 const QA: { q: string; a: string }[] = [
   {
     q: "What is BREAD?",
-    a: "BREAD is the Bread Cooperative's community currency. It's created from USDC 1:1, and you can turn it back into USDC at any time. Every BREAD is backed by the USDC held in reserve.",
+    a: "The Bread Cooperative's community currency. Created from USDC 1:1, redeemable any time.",
   },
   {
     q: "Where does the matching money come from?",
-    a: "From interest. The USDC behind every BREAD sits in safe, interest-bearing reserves. The interest goes into a shared yield pool, and at the end of every season the pool is split between funds. Nobody's principal is ever spent.",
+    a: "Interest on the USDC behind BREAD. Each season it's split between funds. Principal is never spent.",
   },
   {
     q: "Why do only BREAD donations get matched?",
-    a: "BREAD is what earns the yield that pays for matching. Rewarding gifts in BREAD keeps the loop going: more BREAD held means more yield, and more yield means bigger matches. USDC donations still reach projects in full. They just aren't matched.",
+    a: "BREAD earns the yield that pays for matching. USDC gifts still reach projects in full.",
   },
   {
     q: "What are points for?",
-    a: `Points are earned, never bought. Each season you give them to funds. A fund's share of that season's yield is the points it received divided by all the points given, so a fund with 30% of the points gets 30% of the yield. Given points are spent, and the count starts fresh each season. Points given to a proposed fund add up until it launches. Once you've earned ${num(PROPOSE_MIN_POINTS)} points you can propose a fund of your own.`,
+    a: `You give them to funds each season. A fund with 30% of the points gets 30% of the yield. Earn ${num(PROPOSE_MIN_POINTS)} to propose a fund.`,
   },
   {
     q: "Why is there a deposit to create a project?",
-    a: `It keeps spam out. You put down ${PROJECT_DEPOSIT} BREAD when you publish. It comes back once 3 different people back you, or after 14 days without spam reports. Curators can send a spam project's deposit to the matching pool.`,
+    a: `To keep spam out. ${PROJECT_DEPOSIT} BREAD, returned after 3 backers or 14 days.`,
   },
   {
     q: "I was on Artizen. What happens to my project?",
-    a: `Bring it over. Tick "This project was on Artizen" when you create it and link your old page. You'll get an alumni badge, a ${num(POINT_RULES.artizenAlumni)}-point welcome, and you can enter the Artizen Rescue Fund's rounds.`,
+    a: `Bring it over. You'll get an alumni badge and ${num(POINT_RULES.artizenAlumni)} points.`,
   },
   {
     q: "Is any of this real?",
-    a: "Not yet. This is a showcase. Every number is simulated in your browser so you can try the whole loop: holding BREAD, donating, matching, giving points, curating. Use the day counter in the header to fast-forward time.",
+    a: "Not yet. It's simulated in your browser. Use the day counter to skip ahead.",
   },
 ]
 
@@ -42,9 +42,7 @@ export function How() {
       <div className="text-center">
         <Loaf size={48} className="mx-auto" />
         <h1 className="mt-4 font-display text-[48px] leading-tight font-semibold tracking-tight">How Artizenal works</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-lg text-muted-foreground">
-          A funding platform owned by the people who use it. Holding BREAD pays for matching, and members decide where the matching goes.
-        </p>
+        <p className="mx-auto mt-3 max-w-2xl text-lg text-muted-foreground">Holding BREAD pays for matching. Members decide where it goes.</p>
       </div>
 
       <Card className="p-8">
@@ -84,7 +82,7 @@ export function How() {
       </Card>
 
       <div>
-        <SectionTitle title="Three ways to match" sub="Each fund picks the formula that fits its community when it's proposed." />
+        <SectionTitle title="Three ways to match" />
         <div className="grid grid-cols-3 gap-4">
           {Object.values(MECHANISM_INFO).map((m) => (
             <Card key={m.name} className="p-5">

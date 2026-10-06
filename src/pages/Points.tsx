@@ -14,15 +14,15 @@ const TIERS = [
 ]
 
 const EARN = [
-  { icon: HandCoins, title: "Back a project with BREAD", value: `${POINT_RULES.perBread} per BREAD`, note: "Counts toward matching too" },
-  { icon: Landmark, title: "Give to a fund", value: `${POINT_RULES.perFundBread} per BREAD`, note: "Double, because it funds everyone" },
-  { icon: UserPlus, title: "Invite a friend", value: `${POINT_RULES.referral} + 10%`, note: "Plus 10% of every point they earn" },
-  { icon: Star, title: "Be an early backer", value: `+${POINT_RULES.earlyBacker}`, note: `One of a project's first ${POINT_RULES.earlyBackerSlots} donors` },
-  { icon: Sprout, title: "Hold BREAD", value: "1 per 10 / day", note: "Your BREAD keeps earning for the commons" },
-  { icon: Rocket, title: "Launch a project", value: `+${POINT_RULES.createProject}`, note: "After your spam deposit" },
-  { icon: History, title: "Artizen alumni", value: `+${num(POINT_RULES.artizenAlumni)}`, note: "Welcome bonus for rehomed projects" },
-  { icon: Vote, title: "Propose a fund / run a round", value: `+${POINT_RULES.proposeFund} / +${POINT_RULES.curate}`, note: "For curators" },
-  { icon: Gift, title: "Back a project with USDC", value: `${POINT_RULES.perUsdc} per USDC`, note: "Not matched, so half the points" },
+  { icon: HandCoins, title: "Back a project with BREAD", value: `${POINT_RULES.perBread} per BREAD`, note: "Matched" },
+  { icon: Landmark, title: "Give to a fund", value: `${POINT_RULES.perFundBread} per BREAD`, note: "Double points" },
+  { icon: UserPlus, title: "Invite a friend", value: `${POINT_RULES.referral} + 10%`, note: "Plus 10% of theirs" },
+  { icon: Star, title: "Be an early backer", value: `+${POINT_RULES.earlyBacker}`, note: `First ${POINT_RULES.earlyBackerSlots} donors` },
+  { icon: Sprout, title: "Hold BREAD", value: "1 per 10 / day", note: "Daily" },
+  { icon: Rocket, title: "Launch a project", value: `+${POINT_RULES.createProject}`, note: "One time" },
+  { icon: History, title: "Artizen alumni", value: `+${num(POINT_RULES.artizenAlumni)}`, note: "One time" },
+  { icon: Vote, title: "Curate", value: `+${POINT_RULES.proposeFund} / +${POINT_RULES.curate}`, note: "Propose a fund / run a round" },
+  { icon: Gift, title: "Back a project with USDC", value: `${POINT_RULES.perUsdc} per USDC`, note: "Not matched" },
 ]
 
 const REASON_LABEL: Record<string, string> = {
@@ -60,7 +60,7 @@ export function Points() {
     <div className="space-y-8">
       <div>
       <PointsTabs active="earn" />
-      <SectionTitle title="Points" sub="Points measure what you've put into Artizenal. You can't buy, sell or transfer them. Each season you give them to funds, and the ratio of points given sets how the shared yield is split. Points you've earned all-time also unlock curation." />
+      <SectionTitle title="Points" sub="Earned, never bought. Give them to funds to split the yield." />
       </div>
 
       <div className="grid grid-cols-[1.2fr_1fr] gap-5">

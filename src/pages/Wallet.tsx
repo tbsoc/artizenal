@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrowDown, CircleDollarSign, Info, Sprout, Sparkles } from "lucide-react"
+import { ArrowDown, CircleDollarSign, Sprout, Sparkles } from "lucide-react"
 import { Bread, Button, Card, Input, Loaf, SectionTitle, Empty } from "@/components/ui"
 import { ME, POINT_RULES, getFund, getProject, getUser, useStore } from "@/lib/store"
 import { num } from "@/lib/utils"
@@ -18,7 +18,6 @@ export function Wallet() {
   const [toBread, setToBread] = useState(true)
   const [amount, setAmount] = useState(100)
   const me = getUser(state, ME)
-  const perDay = (state.me.bread * state.apy) / 365
   const max = toBread ? state.me.usdc : state.me.bread
   const from = toBread ? "USDC" : "BREAD"
   const to = toBread ? "BREAD" : "USDC"
@@ -39,7 +38,7 @@ export function Wallet() {
     <div className="space-y-8">
       <SectionTitle
         title={`${me?.name.split(" ")[0] ?? "Your"}'s wallet`}
-        sub="BREAD is created from USDC, 1:1, and can be turned back at any time. While you hold BREAD, the interest on the USDC behind it pays for matching."
+        sub="Convert USDC to BREAD 1:1. While you hold it, its interest pays for matching."
       />
 
       <div className="grid grid-cols-[1fr_1fr_420px] gap-5">
@@ -99,49 +98,24 @@ export function Wallet() {
               <span className="text-muted-foreground">Rate</span>
               <span className="font-semibold">1 {from} = 1 {to}</span>
             </div>
-            {toBread && (
-              <>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Yield it adds to matching</span>
-                  <span className="font-semibold text-community">≈ {num(((amount * state.apy) / 365) * 30, 2)} / season</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Holding points</span>
-                  <span className="font-semibold text-coop-ink">+{num((amount / 10) * POINT_RULES.holdingPer10PerDay)} / day</span>
-                </div>
-              </>
-            )}
           </div>
           <Button size="lg" className="mt-5 w-full" onClick={submit} disabled={amount <= 0 || amount > max}>
             Convert {num(amount)} {from} to {to}
           </Button>
-          <div className="mt-5 flex gap-3 text-xs text-muted-foreground">
-            <Info size={16} className="mt-0.5 shrink-0 text-coop-ink" />
-            In the real version this happens through the Bread Cooperative. In this showcase, balances and conversions are simulated.
-          </div>
         </Card>
 
-        <Card className="col-span-2 grid grid-cols-3 gap-6 p-6">
+        <Card className="col-span-2 grid grid-cols-2 gap-6 p-6">
           <div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Sprout size={14} /> Your BREAD earns per day
+              <Sprout size={14} /> Yield you've generated for matching
             </div>
-            <Bread value={perDay} digits={3} className="mt-1 text-2xl font-semibold text-community" />
-            <div className="text-xs text-muted-foreground">all of it goes to matching</div>
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Sprout size={14} /> Yield you've generated
-            </div>
-            <Bread value={state.me.yieldGenerated} digits={2} className="mt-1 text-2xl font-semibold" />
-            <div className="text-xs text-muted-foreground">since you joined</div>
+            <Bread value={state.me.yieldGenerated} digits={2} className="mt-1 text-2xl font-semibold text-community" />
           </div>
           <div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Sparkles size={14} /> Holding points
             </div>
             <div className="mt-1 text-2xl font-semibold text-coop-ink tabular-nums">+{num((state.me.bread / 10) * POINT_RULES.holdingPer10PerDay)}/day</div>
-            <div className="text-xs text-muted-foreground">1 point per 10 BREAD held, daily</div>
           </div>
         </Card>
       </div>

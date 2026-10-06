@@ -279,8 +279,8 @@ export function ProjectPage({ id }: { id: string }) {
                       : "Deposit forfeited to the commons"}
                 </div>
                 {project.deposit.status === "held"
-                  ? "Returned once 3 different people back the project, or after 14 days with no spam reports."
-                  : "This project has shown it's real and got its deposit back."}
+                  ? "Returned after 3 backers or 14 days."
+                  : ""}
               </div>
             </div>
           </Card>
