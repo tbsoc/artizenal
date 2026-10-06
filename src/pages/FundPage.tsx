@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { confettiFrom } from "@/lib/confetti"
 import { ArrowLeft, HandCoins, Rocket, Settings2, ShoppingBasket, Sparkles, Vote, Plus } from "lucide-react"
 import {
   Avatar,
@@ -43,9 +44,10 @@ function GivePoints({ fund }: { fund: Fund }) {
   const mine = state.pointGifts
     .filter((g) => g.userId === ME && g.fundId === fund.id && (fund.status === "proposed" || g.season === state.season))
     .reduce((a, g) => a + g.amount, 0)
-  const give = (amount: number) => {
+  const give = (amount: number, from: Element) => {
     const r = actions.givePoints({ [fund.id]: amount })
     if (!r.ok) return toast(r.error, "err")
+    confettiFrom(from, `+${num(amount)} points`)
     toast(`+${num(amount)} points to ${fund.name}`)
   }
   return (
@@ -58,7 +60,7 @@ function GivePoints({ fund }: { fund: Fund }) {
         {[10, 100, 1000].map((amt) => (
           <button
             key={amt}
-            onClick={() => give(amt)}
+            onClick={(e) => give(amt, e.currentTarget)}
             disabled={amt > balance}
             className="h-9 flex-1 rounded-full border border-border bg-card text-sm font-semibold tabular-nums transition hover:border-coop-ink hover:bg-coop-ink hover:text-white disabled:pointer-events-none disabled:opacity-35 cursor-pointer"
           >

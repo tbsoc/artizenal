@@ -2,6 +2,7 @@ import { Badge, Bread, Card, LiveYield, Pts, SectionTitle, Stat, MechanismBadge,
 import { Cover } from "@/components/Cover"
 import { ME, dailyYield, fundTotalPoints, getFund, pointsBalance, seasonRatios, useStore } from "@/lib/store"
 import { num } from "@/lib/utils"
+import { confettiFrom } from "@/lib/confetti"
 
 const BAR_COLORS = ["#d9762b", "#2f8f6b", "#3d5a99", "#b5466b", "#8a6d2b", "#6b4ea0", "#2a8d9d", "#a05a2c"]
 
@@ -21,9 +22,10 @@ export function Allocate() {
 
   const colorOf = (fid: string) => BAR_COLORS[state.funds.findIndex((f) => f.id === fid) % BAR_COLORS.length]
 
-  const give = (fid: string, amount: number) => {
+  const give = (fid: string, amount: number, from: Element) => {
     const r = actions.givePoints({ [fid]: amount })
     if (!r.ok) return toast(r.error, "err")
+    confettiFrom(from, `+${num(amount)} points`)
     toast(`+${num(amount)} points to ${getFund(state, fid)?.name}`)
   }
 
@@ -69,7 +71,7 @@ export function Allocate() {
             {PRESETS.map((amt) => (
               <button
                 key={amt}
-                onClick={() => give(fid, amt)}
+                onClick={(e) => give(fid, amt, e.currentTarget)}
                 disabled={amt > balance}
                 className="h-9 min-w-14 rounded-full border border-border bg-card px-3 text-sm font-semibold tabular-nums transition hover:border-coop-ink hover:bg-coop-ink hover:text-white disabled:pointer-events-none disabled:opacity-35 cursor-pointer"
               >
