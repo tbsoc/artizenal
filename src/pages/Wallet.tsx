@@ -47,7 +47,7 @@ export function Wallet() {
     <div className="space-y-8">
       <SectionTitle
         title={`${me?.name.split(" ")[0] ?? "Your"}'s wallet`}
-        sub="Convert USDC, EURC or ETH into art tokens 1:1. While you hold them, their yield funds matching."
+        sub="Convert USDC, EURC or ETH into art tokens 1:1. While you hold them, the reserves behind them earn yield in DeFi, and that yield funds matching."
       />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_400px]">

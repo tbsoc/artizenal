@@ -42,7 +42,7 @@ export function Wealth() {
             <Landmark size={26} className="text-crust" /> Artizenal Wealth Fund
           </span>
         }
-        sub="Every art token and every endowment sits here. Only the interest is used, and it pays for matching."
+        sub="Every art token and every endowment sits here. The reserves earn yield in DeFi through savings protocols and ETH staking. Only that yield is used, and it pays for matching."
       />
 
       <Card className="grid grid-cols-1 gap-6 p-6 md:p-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.5fr)] lg:items-center lg:gap-10">

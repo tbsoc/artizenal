@@ -7,8 +7,8 @@ export const ASSETS: Record<
   Asset,
   { token: string; base: string; usd: number; apy: number; digits: number; presets: number[]; yieldSource: string }
 > = {
-  USD: { token: "artUSD", base: "USDC", usd: 1, apy: 0.045, digits: 2, presets: [5, 10, 25, 50, 100], yieldSource: "US dollar savings" },
-  EUR: { token: "artEUR", base: "EURC", usd: 1.08, apy: 0.032, digits: 2, presets: [5, 10, 25, 50, 100], yieldSource: "euro savings" },
+  USD: { token: "artUSD", base: "USDC", usd: 1, apy: 0.045, digits: 2, presets: [5, 10, 25, 50, 100], yieldSource: "DeFi dollar savings" },
+  EUR: { token: "artEUR", base: "EURC", usd: 1.08, apy: 0.032, digits: 2, presets: [5, 10, 25, 50, 100], yieldSource: "DeFi euro savings" },
   ETH: { token: "artETH", base: "ETH", usd: 3200, apy: 0.03, digits: 4, presets: [0.005, 0.01, 0.02, 0.05, 0.1], yieldSource: "ETH staking" },
 }
 

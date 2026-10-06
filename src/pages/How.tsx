@@ -10,6 +10,10 @@ const QA: { q: string; a: string }[] = [
     a: "Art tokens built on the Bread Cooperative stack. Each is created 1:1 from USDC, EURC or ETH and can be redeemed any time.",
   },
   {
+    q: "How do art tokens earn yield?",
+    a: "The USDC, EURC and ETH behind them are put to work in DeFi: dollar and euro savings protocols, and ETH staking. You keep your tokens and can redeem them 1:1; the yield they earn goes to matching.",
+  },
+  {
     q: "Where does the matching money come from?",
     a: "The Artizenal Wealth Fund: everything behind the art tokens, plus permanent endowments. Its savings and staking yield is split between funds each season. Principal is never spent.",
   },

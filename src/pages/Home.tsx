@@ -91,7 +91,7 @@ function Checklist() {
 
 const FLOW = [
   { icon: Landmark, title: "Hold or endow", text: "artUSD, artEUR or artETH, 1:1. Or give principal for good." },
-  { icon: Sprout, title: "Wealth Fund earns", text: "Savings and staking yield on all of it." },
+  { icon: Sprout, title: "DeFi earns", text: "Reserves earn yield in DeFi savings and staking." },
   { icon: Vote, title: "Points split it", text: "Funds get yield in proportion to points given." },
   { icon: HandCoins, title: "Rounds match", text: "Funds match artUSD donations to projects." },
 ]
