@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/* Step 1: CSS variables at root level (hsl() wrapped)                 */
+/* ------------------------------------------------------------------ */
+:root {
+  --radius: 0.85rem;
+
+  /* Warm, off-white "flour" background */
+  --background: hsl(40 33% 98%);
+  --foreground: hsl(28 18% 14%);
+
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(28 18% 14%);
+
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(28 18% 14%);
+
+  /* Primary: toasted bread-crust amber */
+  --primary: hsl(26 84% 48%);
+  --primary-foreground: hsl(40 40% 98%);
+
+  /* Secondary: soft wheat */
+  --secondary: hsl(40 55% 92%);
+  --secondary-foreground: hsl(28 40% 22%);
+
+  --muted: hsl(38 30% 94%);
+  --muted-foreground: hsl(30 10% 42%);
+
+  --accent: hsl(40 55% 92%);
+  --accent-foreground: hsl(28 40% 22%);
+
+  --destructive: hsl(2 74% 52%);
+  --destructive-foreground: hsl(40 40% 98%);
+
+  --success: hsl(150 58% 38%);
+  --success-foreground: hsl(150 40% 97%);
+
+  --border: hsl(34 24% 88%);
+  --input: hsl(34 24% 88%);
+  --ring: hsl(26 84% 48%);
+
+  /* Brand extras */
+  --crust: hsl(26 84% 48%);
+  --wheat: hsl(41 78% 62%);
+  --community: hsl(158 52% 38%);   /* cooperative green */
+  --community-foreground: hsl(158 40% 97%);
+  --coop-ink: hsl(224 44% 24%);    /* trustworthy deep indigo for accents */
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Step 2: map variables to Tailwind utilities                         */
+/* ------------------------------------------------------------------ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-crust: var(--crust);
+  --color-wheat: var(--wheat);
+  --color-community: var(--community);
+  --color-community-foreground: var(--community-foreground);
+  --color-coop-ink: var(--coop-ink);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-xl: calc(var(--radius) + 6px);
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ------------------------------------------------------------------ */
+/* Step 3: base styles (unwrapped variables)                           */
+/* ------------------------------------------------------------------ */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Utilities */
+.bread-grain {
+  background-image: radial-gradient(
+      circle at 1px 1px,
+      color-mix(in srgb, var(--foreground) 8%, transparent) 1px,
+      transparent 0
+    );
+  background-size: 22px 22px;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 50;
+}
+
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(8px) scale(.98) } to { opacity: 1; transform: none } }
+@keyframes slide-in { from { transform: translateX(100%) } to { transform: none } }
+@keyframes pulse-dot { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+@keyframes rise { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+.animate-in { animation: fade-in .15s ease-out }
+.pop-in { animation: pop-in .2s cubic-bezier(.2,.8,.2,1) }
+.slide-in { animation: slide-in .25s cubic-bezier(.2,.8,.2,1) }
+.live-dot { animation: pulse-dot 1.6s ease-in-out infinite }
+.rise { animation: rise .35s ease-out both }
+
+.prose-body p + p { margin-top: 1em }
+
+input[type="range"] { accent-color: var(--primary); }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
