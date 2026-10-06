@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { ReactNode } from "react"
-import { ShoppingBasket, FastForward, RotateCcw, CalendarClock, ChevronDown, CheckCircle2, AlertCircle, Info } from "lucide-react"
+import { ShoppingBasket, FastForward, RotateCcw, CalendarClock, ChevronDown, CheckCircle2, AlertCircle, Info, Menu, X } from "lucide-react"
 import { Avatar, Bread, BreadLogo, Button, Pts } from "./ui"
 import { AboutModal, CartDrawer, Onboarding } from "./modals"
 import { ME, dailyYield, getUser, pointsBalance, useStore } from "@/lib/store"
@@ -44,7 +44,7 @@ function SimClock() {
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="pop-in fixed inset-x-3 top-28 z-40 rounded-2xl sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-80 border border-border bg-card p-4 shadow-xl">
+          <div className="pop-in fixed inset-x-3 top-[4.5rem] z-40 rounded-2xl sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-80 border border-border bg-card p-4 shadow-xl">
             <div className="text-xs font-semibold tracking-wide text-coop-ink uppercase">Demo time machine</div>
             <p className="mt-1 text-xs text-muted-foreground">
               Skip ahead to see yield build up and rounds pay out.
@@ -105,55 +105,52 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
   const { state, toasts } = useStore()
   const [cartOpen, setCartOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const me = getUser(state, ME)
+  useEffect(() => {
+    const close = () => setMenuOpen(false)
+    window.addEventListener("hashchange", close)
+    return () => window.removeEventListener("hashchange", close)
+  }, [])
+  const iconBtn = "relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card hover:bg-muted cursor-pointer"
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 md:px-8 xl:h-16 xl:flex-nowrap xl:gap-8 xl:py-0">
+        <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-3 px-4 md:px-8 xl:gap-8">
           <a href="#/" className="flex items-center gap-2">
             <BreadLogo size={28} />
             <span className="font-display text-xl font-semibold tracking-tight md:text-[22px]">Artizenal</span>
           </a>
-          <nav className="no-scrollbar order-last -mx-4 flex basis-full items-center gap-1 overflow-x-auto px-4 md:-mx-8 md:px-8 xl:order-none xl:mx-0 xl:basis-auto xl:px-0">
+          <nav className="hidden items-center gap-1 xl:flex">
             {NAV.map((n) => (
               <a
                 key={n.href}
                 href={n.href}
                 className={cn(
-                  "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition",
+                  "rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition",
                   n.match(path) ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 {n.label}
               </a>
             ))}
-            <button
-              onClick={() => setAboutOpen(true)}
-              className="shrink-0 rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap text-muted-foreground hover:bg-muted sm:hidden cursor-pointer"
-            >
-              About
-            </button>
           </nav>
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setAboutOpen(true)}
-              className="hidden h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer sm:flex"
+              className="hidden h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer xl:flex"
               title="What is this showcase?"
             >
               <Info size={16} /> About
             </button>
             <SimClock />
-            <a href="#/wallet" className="hidden h-10 items-center gap-3 rounded-full sm:flex border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted" title="Wallet">
+            <a href="#/wallet" className="hidden h-10 items-center gap-3 rounded-full border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted md:flex" title="Wallet">
               <Bread value={state.me.bread} digits={state.me.bread % 1 ? 2 : 0} />
             </a>
-            <a href="#/points" className="hidden h-10 items-center rounded-full md:flex border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted" title="Points you can give">
+            <a href="#/points" className="hidden h-10 items-center rounded-full border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted md:flex" title="Points you can give">
               <Pts value={pointsBalance(state, ME)} />
             </a>
-            <button
-              onClick={() => setCartOpen(true)}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card hover:bg-muted cursor-pointer"
-              aria-label="Basket"
-            >
+            <button onClick={() => setCartOpen(true)} className={iconBtn} aria-label="Basket">
               <ShoppingBasket size={17} />
               {state.cart.length > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
@@ -161,11 +158,55 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
                 </span>
               )}
             </button>
-            <a href="#/wallet" aria-label="Your account">
+            <a href="#/wallet" aria-label="Your account" className="hidden sm:block">
               <Avatar user={me} size={36} />
             </a>
+            <button onClick={() => setMenuOpen((o) => !o)} className={cn(iconBtn, "xl:hidden")} aria-label={menuOpen ? "Close menu" : "Open menu"} aria-expanded={menuOpen}>
+              {menuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
           </div>
         </div>
+
+        {menuOpen && (
+          <>
+            <div className="fixed inset-0 top-16 z-30 bg-foreground/20 xl:hidden" onClick={() => setMenuOpen(false)} />
+            <div className="pop-in absolute inset-x-0 top-16 z-40 border-b border-border bg-background shadow-lg xl:hidden">
+              <nav className="mx-auto flex max-w-[1280px] flex-col px-4 py-3 md:px-8">
+                {NAV.map((n) => (
+                  <a
+                    key={n.href}
+                    href={n.href}
+                    className={cn(
+                      "rounded-xl px-3 py-3 text-base font-medium transition",
+                      n.match(path) ? "bg-foreground text-background" : "text-foreground hover:bg-muted"
+                    )}
+                  >
+                    {n.label}
+                  </a>
+                ))}
+                <button
+                  onClick={() => {
+                    setMenuOpen(false)
+                    setAboutOpen(true)
+                  }}
+                  className="flex items-center gap-2 rounded-xl px-3 py-3 text-left text-base font-medium hover:bg-muted cursor-pointer"
+                >
+                  <Info size={17} /> About this showcase
+                </button>
+                <div className="mt-2 grid grid-cols-2 gap-2 border-t border-border pt-3 md:hidden">
+                  <a href="#/wallet" className="flex items-center justify-between rounded-xl bg-card px-3 py-3 text-sm font-semibold border border-border">
+                    <span className="text-muted-foreground">Wallet</span>
+                    <Bread value={state.me.bread} digits={state.me.bread % 1 ? 2 : 0} />
+                  </a>
+                  <a href="#/allocate" className="flex items-center justify-between rounded-xl bg-card px-3 py-3 text-sm font-semibold border border-border">
+                    <span className="text-muted-foreground">Points</span>
+                    <Pts value={pointsBalance(state, ME)} />
+                  </a>
+                </div>
+              </nav>
+            </div>
+          </>
+        )}
       </header>
 
       <main className="mx-auto max-w-[1280px] px-4 pt-6 pb-24 md:px-8 md:pt-8">{children}</main>
