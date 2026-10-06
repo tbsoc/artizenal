@@ -18,7 +18,10 @@ export function Allocate() {
   const after = now
   const daysLeft = state.seasonLength - (state.day - state.seasonStartDay)
   const seasonEstimate = state.yieldPool + dailyYield(state) * daysLeft
-  const myGifts = state.pointGifts.filter((g) => g.userId === ME && g.season === state.season).reverse()
+  // One row per fund: the total points you've given it this season.
+  const tally = new Map<string, number>()
+  for (const g of state.pointGifts) if (g.userId === ME && g.season === state.season) tally.set(g.fundId, (tally.get(g.fundId) ?? 0) + g.amount)
+  const myGifts = [...tally.entries()].map(([fundId, amount]) => ({ fundId, amount })).sort((a, b) => b.amount - a.amount)
 
   const colorOf = (fid: string) => BAR_COLORS[state.funds.findIndex((f) => f.id === fid) % BAR_COLORS.length]
 
@@ -185,7 +188,7 @@ export function Allocate() {
               <div className="text-sm font-semibold">Your gifts</div>
               <div className="mt-3 space-y-2 text-sm">
                 {myGifts.map((g) => (
-                  <div key={g.id} className="flex items-center justify-between gap-3">
+                  <div key={g.fundId} className="flex items-center justify-between gap-3">
                     <span className="truncate text-muted-foreground">{getFund(state, g.fundId)?.name}</span>
                     <Pts value={g.amount} className="font-semibold" />
                   </div>
