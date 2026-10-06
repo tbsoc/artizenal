@@ -390,9 +390,10 @@ export function LiveYield({ base, perDay, className }: { base: number; perDay: n
   useEffect(() => {
     const start = Date.now()
     setValue(base)
-    const id = setInterval(() => setValue(base + ((Date.now() - start) / 1000) * (perDay / 86400)), 100)
+    const id = setInterval(() => setValue(base + ((Date.now() - start) / 1000) * (perDay / 86400)), 250)
     return () => clearInterval(id)
   }, [base, perDay])
-  return <Bread value={value} digits={4} className={className} />
+  // Inter's tabular digits keep every character the same width, so nothing shifts as it ticks.
+  return <Bread value={value} digits={2} className={cn("font-sans tracking-tight [font-variant-numeric:tabular-nums]", className)} />
 }
 

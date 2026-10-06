@@ -107,7 +107,7 @@ export function Allocate() {
         <Card className="flex items-center gap-6 p-6 md:col-span-2 md:gap-8">
           <div>
             <div className="text-xs text-muted-foreground">Season {state.season} yield so far</div>
-            <LiveYield base={state.yieldPool} perDay={dailyYield(state)} className="mt-1 font-display text-4xl leading-none font-semibold text-community md:text-[42px]" />
+            <LiveYield base={state.yieldPool} perDay={dailyYield(state)} className="mt-1 block text-4xl leading-none font-bold text-community md:text-[42px]" />
             <div className="mt-2 text-xs text-muted-foreground">
               ≈ {num(seasonEstimate)} by season end · {daysLeft} days left
             </div>

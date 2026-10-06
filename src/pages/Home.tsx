@@ -1,5 +1,5 @@
 import { ArrowRight, Check, X, Landmark, Sprout, Vote, HandCoins, Sparkles, History } from "lucide-react"
-import { ArtizenBadge, Avatar, Bread, Card, LinkButton, LiveYield, Loaf, SectionTitle } from "@/components/ui"
+import { ArtizenBadge, Avatar, Card, LinkButton, LiveYield, Loaf, SectionTitle } from "@/components/ui"
 import { CampaignRow, FundCard, ProjectCard } from "@/components/cards"
 import { Cover } from "@/components/Cover"
 import { START_USDC } from "@/lib/seed"
@@ -8,33 +8,29 @@ import { compact, cn, dayLabel, usd } from "@/lib/utils"
 
 function MatchingPool() {
   const { state } = useStore()
-  const live = state.campaigns.filter((c) => campaignStatus(c, state.day) === "live")
-  const livePool = live.reduce((a, c) => a + c.matchingPool, 0)
   const left = state.seasonLength - (state.day - state.seasonStartDay)
   const donated =
     state.donations.filter((d) => d.day >= state.seasonStartDay).reduce((a, d) => a + d.amount, 0) +
     state.fundDonations.filter((d) => d.day >= state.seasonStartDay).reduce((a, d) => a + d.amount, 0)
   const stats = [
     { label: "Donated this season", value: usd(donated) },
-    { label: "Live matching", value: <Bread value={livePool} />, sub: `${live.length} rounds` },
     { label: "BREAD in circulation", value: compact(totalSupply(state)) },
     { label: "Interest (APY)", value: `${(state.apy * 100).toFixed(1)}%` },
   ]
   return (
-    <Card className="grid grid-cols-1 gap-6 p-6 md:p-8 lg:grid-cols-[1.1fr_1.6fr_auto] lg:items-center lg:gap-10">
+    <Card className="grid grid-cols-1 gap-6 p-6 md:p-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_auto] lg:items-center lg:gap-10">
       <div>
         <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           Season {state.season} matching pool · {left} days left
         </div>
-        <LiveYield base={state.yieldPool} perDay={dailyYield(state)} className="mt-2 font-display text-4xl font-semibold text-community md:text-5xl" />
+        <LiveYield base={state.yieldPool} perDay={dailyYield(state)} className="mt-2 block text-4xl font-bold text-community md:text-5xl" />
         <div className="mt-1 text-sm text-muted-foreground">Yield earned so far, growing every second</div>
       </div>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4 lg:border-l lg:border-border lg:pl-10">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:border-l lg:border-border lg:pl-10">
         {stats.map((s) => (
           <div key={s.label}>
             <div className="text-xs text-muted-foreground">{s.label}</div>
             <div className="mt-1 text-xl font-semibold tabular-nums">{s.value}</div>
-            {s.sub && <div className="text-xs text-muted-foreground">{s.sub}</div>}
           </div>
         ))}
       </div>
