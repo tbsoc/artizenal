@@ -515,7 +515,6 @@ export function Onboarding() {
   const { state, actions } = useStore()
   const [step, setStep] = useState<"about" | "join">("about")
   const [name, setName] = useState("")
-  const [code, setCode] = useState("")
   const [email, setEmail] = useState("")
   const [needsEmail] = useState(() => !isSubscribed())
   const [busy, setBusy] = useState(false)
@@ -547,7 +546,7 @@ export function Onboarding() {
             setBusy(false)
             if (!r.ok) return setError(r.error)
           }
-          actions.onboard(name, code || undefined)
+          actions.onboard(name)
         }}
       >
         <div className="flex items-center gap-3">
@@ -561,16 +560,6 @@ export function Onboarding() {
         )}
         <Field label="Name">
           <Input autoFocus={!needsEmail} value={name} onChange={(e) => setName(e.target.value)} placeholder="Sam Baker" />
-        </Field>
-        <Field
-          label="Invite code (optional)"
-          hint={
-            <>
-              Try <button type="button" className="font-semibold text-primary underline cursor-pointer" onClick={() => setCode("MAYA")}>MAYA</button>
-            </>
-          }
-        >
-          <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="MAYA" />
         </Field>
         <div className="flex items-center gap-2 text-sm text-coop-ink">
           <Sparkles size={15} /> {POINT_RULES.welcome} welcome points, plus some USDC, EURC and ETH to try things with
