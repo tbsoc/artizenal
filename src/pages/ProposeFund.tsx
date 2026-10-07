@@ -1,15 +1,17 @@
 import { useState } from "react"
 import { Lock, Scale, Equal, X as Times, Sparkles } from "lucide-react"
-import { Bread, Button, Card, Field, Input, LinkButton, Pts, Select, Textarea } from "@/components/ui"
+import { Button, Card, Field, Input, LinkButton, Pts, Select, Textarea } from "@/components/ui"
 import { Cover } from "@/components/Cover"
-import { QuickBake } from "@/components/modals"
+import { AssetPicker, QuickBake } from "@/components/modals"
+import { ASSETS, fmtUnits, toUsd } from "@/lib/assets"
+import type { Asset } from "@/lib/assets"
 import { ME, POINT_RULES, useStore, userPoints } from "@/lib/store"
 import { PROPOSE_MIN_POINTS } from "@/lib/seed"
 import { MECHANISM_INFO, mechanismLabel } from "@/lib/matching"
 import { CATEGORIES } from "@/lib/types"
 import type { Category, Mechanism } from "@/lib/types"
 import { go } from "@/lib/router"
-import { cn, num } from "@/lib/utils"
+import { cn, num, usd } from "@/lib/utils"
 
 export function ProposeFund() {
   const { state, actions, toast } = useStore()
@@ -24,6 +26,8 @@ export function ProposeFund() {
   const [pledgeGoal, setPledgeGoal] = useState(1500)
   const [backingGoal, setBackingGoal] = useState(10000)
   const [initialPledge, setInitialPledge] = useState(100)
+  const [pledgeAsset, setPledgeAsset] = useState<Asset>("USD")
+  const pledgeUsd = toUsd(pledgeAsset, initialPledge)
   const [seed] = useState(() => Math.floor(Math.random() * 1000))
 
   const mechanism: Mechanism = type === "qf" ? { type } : type === "match" ? { type, cap } : { type, x }
@@ -50,9 +54,9 @@ export function ProposeFund() {
   }
 
   const submit = () => {
-    const r = actions.proposeFund({ name: name.trim(), tagline: tagline.trim(), description: description.trim(), category, mechanism, pledgeGoal, backingGoal, initialPledge })
+    const r = actions.proposeFund({ name: name.trim(), tagline: tagline.trim(), description: description.trim(), category, mechanism, pledgeGoal, backingGoal, initialPledge, pledgeAsset })
     if (!r.ok) return toast(r.error, "err")
-    toast(`${name} proposed! +${num(POINT_RULES.proposeFund + initialPledge * POINT_RULES.perFundBread)} points`)
+    toast(`${name} proposed! +${num(POINT_RULES.proposeFund + pledgeUsd * POINT_RULES.perFundBread)} points`)
     go(`/f/${r.id}`)
   }
 
@@ -66,7 +70,7 @@ export function ProposeFund() {
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px] lg:gap-10">
       <div>
         <h1 className="font-display text-3xl font-semibold md:text-[40px] tracking-tight">Propose a fund</h1>
-        <p className="mt-1 text-muted-foreground">Launches once it hits its artUSD and points goals.</p>
+        <p className="mt-1 text-muted-foreground">Launches once it hits its funding and points goals.</p>
         <div className="mt-8 space-y-6">
           <Card className="space-y-5 p-6">
             <Field label="Fund name">
@@ -106,7 +110,7 @@ export function ProposeFund() {
             </div>
             {type === "match" && (
               <div className="mt-4 w-full sm:w-64">
-                <Field label="Cap per donor per project (artUSD)">
+                <Field label="Cap per donor per project ($)">
                   <Input type="number" value={cap} onChange={(e) => setCap(Math.max(1, Number(e.target.value)))} />
                 </Field>
               </div>
@@ -129,19 +133,28 @@ export function ProposeFund() {
           <Card className="p-6">
             <div className="text-sm font-semibold">Launch conditions</div>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <Field label="Pledge goal (artUSD)">
+              <Field label="Pledge goal ($)">
                 <Input type="number" value={pledgeGoal} onChange={(e) => setPledgeGoal(Math.max(0, Number(e.target.value)))} />
               </Field>
               <Field label="Points goal">
                 <Input type="number" value={backingGoal} onChange={(e) => setBackingGoal(Math.max(0, Number(e.target.value)))} />
               </Field>
-              <Field label="Your own pledge (artUSD)" hint={`Earns ${POINT_RULES.perFundBread} pts per artUSD`}>
-                <Input type="number" value={initialPledge} onChange={(e) => setInitialPledge(Math.max(0, Number(e.target.value)))} />
+              <Field label={`Your own pledge (${ASSETS[pledgeAsset].token})`} hint={`≈ ${usd(pledgeUsd)} · ${POINT_RULES.perFundBread} pts per $1`}>
+                <Input type="number" step="any" value={initialPledge} onChange={(e) => setInitialPledge(Math.max(0, Number(e.target.value)))} />
               </Field>
             </div>
-            {initialPledge > state.me.art.USD && (
+            <div className="mt-4">
+              <AssetPicker
+                value={pledgeAsset}
+                onChange={(a) => {
+                  setPledgeAsset(a)
+                  setInitialPledge(a === "ETH" ? 0.02 : 100)
+                }}
+              />
+            </div>
+            {initialPledge > state.me.art[pledgeAsset] && (
               <div className="mt-4">
-                <QuickBake need={initialPledge} />
+                <QuickBake need={initialPledge} asset={pledgeAsset} />
               </div>
             )}
           </Card>
@@ -165,22 +178,22 @@ export function ProposeFund() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Needs</span>
                   <span className="font-medium">
-                    {num(pledgeGoal)} artUSD + {num(backingGoal)} pts
+                    {usd(pledgeGoal)} + {num(backingGoal)} pts
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Your pledge</span>
-                  <Bread value={initialPledge} className="font-medium" />
+                  <span className="font-medium tabular-nums">{fmtUnits(pledgeAsset, initialPledge)} {ASSETS[pledgeAsset].token}</span>
                 </div>
               </div>
             </div>
           </Card>
           <Card className="p-5 text-sm">
             <div className="flex items-center gap-2 font-semibold text-coop-ink">
-              <Sparkles size={15} /> +{num(POINT_RULES.proposeFund + initialPledge * POINT_RULES.perFundBread)} points
+              <Sparkles size={15} /> +{num(POINT_RULES.proposeFund + pledgeUsd * POINT_RULES.perFundBread)} points
             </div>
             <div className="mt-1 text-muted-foreground">for proposing and pledging. You'll be the fund's first curator.</div>
-            <Button size="lg" className="mt-4 w-full" disabled={!name.trim() || !tagline.trim() || initialPledge > state.me.art.USD} onClick={submit}>
+            <Button size="lg" className="mt-4 w-full" disabled={!name.trim() || !tagline.trim() || initialPledge > state.me.art[pledgeAsset] + 1e-9} onClick={submit}>
               Propose fund
             </Button>
           </Card>

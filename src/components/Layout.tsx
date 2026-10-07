@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react"
 import type { ReactNode } from "react"
 import { ShoppingBasket, FastForward, RotateCcw, CalendarClock, ChevronDown, CheckCircle2, AlertCircle, Info, Menu, X } from "lucide-react"
-import { Avatar, Bread, BreadLogo, Button, Pts } from "./ui"
+import { Avatar, BreadLogo, Button, Pts } from "./ui"
 import { AboutModal, CartDrawer, Onboarding } from "./modals"
-import { ME, dailyYield, getUser, pointsBalance, useStore } from "@/lib/store"
-import { cn, num } from "@/lib/utils"
+import { ME, dailyYield, getUser, myHoldingsUsd, pointsBalance, useStore } from "@/lib/store"
+import { ASSET_IDS } from "@/lib/assets"
+import type { Asset } from "@/lib/assets"
+import { cn, num, usd } from "@/lib/utils"
 
 const NAV = [
   { href: "#/", label: "Discover", match: (p: string) => p === "/" },
@@ -101,6 +103,26 @@ function SimClock() {
   )
 }
 
+/** Picks the currency every combined total is shown in. */
+function CurrencySelect({ className }: { className?: string }) {
+  const { state, actions } = useStore()
+  return (
+    <select
+      value={state.me.display ?? "USD"}
+      onChange={(e) => actions.setDisplay(e.target.value as Asset)}
+      className={cn("cursor-pointer bg-transparent text-xs font-semibold text-muted-foreground outline-none hover:text-foreground", className)}
+      aria-label="Show totals in"
+      title="Show totals in"
+    >
+      {ASSET_IDS.map((a) => (
+        <option key={a} value={a}>
+          {a}
+        </option>
+      ))}
+    </select>
+  )
+}
+
 export function Layout({ path, children }: { path: string; children: ReactNode }) {
   const { state, toasts } = useStore()
   const [cartOpen, setCartOpen] = useState(false)
@@ -144,9 +166,12 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
               <Info size={16} /> <span className="hidden 2xl:inline">About</span>
             </button>
             <SimClock />
-            <a href="#/wallet" className="hidden h-10 items-center gap-3 rounded-full border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted md:flex" title="Wallet">
-              <Bread value={state.me.art.USD} digits={state.me.art.USD % 1 ? 2 : 0} />
-            </a>
+            <div className="hidden h-10 items-center rounded-full border border-border bg-card text-sm font-semibold md:flex">
+              <CurrencySelect className="h-full rounded-l-full pl-3 pr-1" />
+              <a href="#/wallet" className="flex h-full items-center rounded-r-full pr-3.5 pl-1 hover:bg-muted" title="Your pas tokens">
+                {usd(myHoldingsUsd(state))}
+              </a>
+            </div>
             <a href="#/points" className="hidden h-10 items-center rounded-full border border-border bg-card px-3.5 text-sm font-semibold hover:bg-muted md:flex" title="Points you can give">
               <Pts value={pointsBalance(state, ME)} />
             </a>
@@ -196,8 +221,12 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
                 <div className="mt-2 grid grid-cols-2 gap-2 border-t border-border pt-3 md:hidden">
                   <a href="#/wallet" className="flex items-center justify-between rounded-xl bg-card px-3 py-3 text-sm font-semibold border border-border">
                     <span className="text-muted-foreground">Wallet</span>
-                    <Bread value={state.me.art.USD} digits={state.me.art.USD % 1 ? 2 : 0} />
+                    {usd(myHoldingsUsd(state))}
                   </a>
+                  <div className="col-span-2 flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2 text-sm">
+                    <span className="text-muted-foreground">Show totals in</span>
+                    <CurrencySelect className="h-8 rounded-lg px-2 font-semibold" />
+                  </div>
                   <a href="#/allocate" className="flex items-center justify-between rounded-xl bg-card px-3 py-3 text-sm font-semibold border border-border">
                     <span className="text-muted-foreground">Points</span>
                     <Pts value={pointsBalance(state, ME)} />

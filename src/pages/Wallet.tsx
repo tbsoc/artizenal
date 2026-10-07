@@ -28,13 +28,13 @@ export function Wallet() {
       .map((d) => ({ day: d.day, label: getProject(state, d.projectId)?.title ?? "", href: `#/p/${d.projectId}`, value: `${fmtUnits(d.asset, d.units)} ${ASSETS[d.asset].token}`, kind: d.campaignId ? "Matched donation" : "Donation" })),
     ...state.fundDonations
       .filter((d) => d.from === ME)
-      .map((d) => ({ day: d.day, label: getFund(state, d.fundId)?.name ?? "", href: `#/f/${d.fundId}`, value: `${num(d.amount)} artUSD`, kind: "Fund gift" })),
+      .map((d) => ({ day: d.day, label: getFund(state, d.fundId)?.name ?? "", href: `#/f/${d.fundId}`, value: `${fmtUnits(d.asset, d.units)} ${ASSETS[d.asset].token}`, kind: "Fund gift" })),
     ...state.endowments
       .filter((e) => e.userId === ME)
       .map((e) => ({ day: e.day, label: "Pastry Wealth Fund", href: "#/wealth", value: `${fmtUnits(e.asset, e.units)} ${ASSETS[e.asset].base}`, kind: "Endowment" })),
     ...state.projects
       .filter((p) => p.creatorId === ME)
-      .map((p) => ({ day: p.createdDay, label: `${p.title} deposit (${p.deposit.status})`, href: `#/p/${p.id}`, value: `${p.deposit.amount} artUSD`, kind: "Spam deposit" })),
+      .map((p) => ({ day: p.createdDay, label: `${p.title} deposit (${p.deposit.status})`, href: `#/p/${p.id}`, value: `${p.deposit.amount} pasUSD`, kind: "Spam deposit" })),
   ].sort((a, b) => b.day - a.day)
 
   const submit = () => {
@@ -47,7 +47,7 @@ export function Wallet() {
     <div className="space-y-8">
       <SectionTitle
         title={`${me?.name.split(" ")[0] ?? "Your"}'s wallet`}
-        sub="Convert USDC, EURC or ETH into art tokens 1:1. While you hold them, the reserves behind them earn yield in DeFi, and that yield funds matching."
+        sub="Convert USDC, EURC or ETH into pas tokens 1:1. While you hold them, the reserves behind them earn yield in DeFi, and that yield funds matching."
       />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_400px]">

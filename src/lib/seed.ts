@@ -14,7 +14,7 @@ import type {
   User,
 } from "./types"
 
-export const STATE_VERSION = 8
+export const STATE_VERSION = 9
 export const PROJECT_DEPOSIT = 25
 export const PROPOSE_MIN_POINTS = 1000
 export const START_USDC = 750
@@ -312,7 +312,7 @@ const funds: Fund[] = [
     name: "Small Press & Zines",
     tagline: "Keeping independent publishing weird and affordable.",
     description:
-      "Grants and matching for zines, small presses, translation and community publishing. We match every donor one-for-one up to 50 artUSD per project, so a lot of small gifts go a long way.",
+      "Grants and matching for zines, small presses, translation and community publishing. We match every donor one-for-one up to 50 pasUSD per project, so a lot of small gifts go a long way.",
     category: "Publishing",
     curators: ["ana", "maya"],
     proposedBy: "ana",
@@ -348,7 +348,7 @@ const funds: Fund[] = [
     name: "Music Without Labels",
     tagline: "For musicians who'd rather own their work.",
     description:
-      "Independent recordings, archives, instruments and tours. 1.5× multiplier on every artUSD given to a project in an active round.",
+      "Independent recordings, archives, instruments and tours. 1.5× multiplier on every pasUSD given to a project in an active round.",
     category: "Music",
     curators: ["bea", "sol"],
     proposedBy: "bea",
@@ -414,7 +414,7 @@ const campaigns: Campaign[] = [
     id: "repair-rebuild",
     fundId: "climate-commons",
     name: "Repair & Rebuild",
-    blurb: "Doubling every artUSD for open tools that keep things out of landfill and power in neighbors' hands.",
+    blurb: "Doubling every pasUSD for open tools that keep things out of landfill and power in neighbors' hands.",
     startDay: 35,
     endDay: 63,
     matchingPool: 6000,
@@ -424,7 +424,7 @@ const campaigns: Campaign[] = [
     id: "zine-drive",
     fundId: "small-press",
     name: "Spring Zine Drive",
-    blurb: "A short, sharp round for presses, zines and translations. Every donor matched 1:1 up to 50 artUSD.",
+    blurb: "A short, sharp round for presses, zines and translations. Every donor matched 1:1 up to 50 pasUSD.",
     startDay: 38,
     endDay: 52,
     matchingPool: 3000,
@@ -571,15 +571,15 @@ export function buildSeed(): State {
   ]
 
   const fundDonations = [
-    { id: "fd1", from: "oli", fundId: "food-sovereignty", amount: 600, day: 35 },
-    { id: "fd2", from: "priya", fundId: "food-sovereignty", amount: 250, day: 34 },
-    { id: "fd3", from: "ines", fundId: "food-sovereignty", amount: 150, day: 36 },
-    { id: "fd4", from: "lena", fundId: "disability-design", amount: 300, day: 38 },
-    { id: "fd5", from: "noor", fundId: "disability-design", amount: 400, day: 39 },
-    { id: "fd6", from: "oli", fundId: "artizen-rescue", campaignId: "lifeboat", amount: 1000, day: 31 },
+    { id: "fd1", from: "oli", fundId: "food-sovereignty", amount: 600, asset: "USD" as const, units: 600, day: 35 },
+    { id: "fd2", from: "priya", fundId: "food-sovereignty", amount: 250, asset: "USD" as const, units: 250, day: 34 },
+    { id: "fd3", from: "ines", fundId: "food-sovereignty", amount: 150, asset: "USD" as const, units: 150, day: 36 },
+    { id: "fd4", from: "lena", fundId: "disability-design", amount: 300, asset: "USD" as const, units: 300, day: 38 },
+    { id: "fd5", from: "noor", fundId: "disability-design", amount: 400, asset: "USD" as const, units: 400, day: 39 },
+    { id: "fd6", from: "oli", fundId: "artizen-rescue", campaignId: "lifeboat", amount: 1000, asset: "USD" as const, units: 1000, day: 31 },
   ]
 
-  // Art tokens other members hold, and permanent endowments, in units of each asset.
+  // Pas tokens other members hold, and permanent endowments, in units of each asset.
   const supply: Record<Asset, number> = { USD: 1_650_000, EUR: 420_000, ETH: 95 }
   const endowments: Endowment[] = [
     { id: "se1", userId: "oli", asset: "USD", units: 6_000, usd: 6_000, day: 12 },

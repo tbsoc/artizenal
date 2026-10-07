@@ -36,7 +36,7 @@ import {
 } from "@/lib/store"
 import { MECHANISM_INFO, campaignContributions, campaignMatches, mechanismLabel } from "@/lib/matching"
 import type { Campaign, Fund } from "@/lib/types"
-import { cn, num } from "@/lib/utils"
+import { cn, num, usd } from "@/lib/utils"
 
 function GivePoints({ fund }: { fund: Fund }) {
   const { state, actions, toast } = useStore()
@@ -96,7 +96,7 @@ function StartCampaignModal({ fund, open, onClose }: { fund: Fund; open: boolean
           <Textarea value={blurb} onChange={(e) => setBlurb(e.target.value)} className="min-h-20" />
         </Field>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Field label="Matching pool" hint={`Reserve: ${num(fund.reserve)} artUSD`}>
+          <Field label="Matching pool" hint={`Reserve: ${usd(fund.reserve)}`}>
             <Input type="number" value={pool || ""} onChange={(e) => setPool(Math.max(0, Number(e.target.value)))} />
           </Field>
           <Field label="Length (days)">
@@ -202,19 +202,19 @@ function CampaignPanel({ campaign, fund }: { campaign: Campaign; fund: Fund }) {
         </div>
         <div className="mt-6 grid grid-cols-2 gap-6 border-t border-border pt-5 md:grid-cols-4">
           <Stat label="Matching pool" value={<Bread value={campaign.matchingPool} />} />
-          <Stat label="Donated in artUSD" value={<Bread value={totalGiven} />} sub={`${new Set(contribs.map((c) => c.donor)).size} donors`} />
+          <Stat label="Donated" value={<Bread value={totalGiven} />} sub={`${new Set(contribs.map((c) => c.donor)).size} donors`} />
           {status === "ended" ? (
             <Stat label="Matched" value={<Bread value={totalMatch} className="text-community" />} />
           ) : fund.mechanism.type === "qf" ? (
             <Stat
-              label="Match per artUSD"
+              label="Match per $1"
               value={<span className="text-community">{totalGiven ? (campaign.matchingPool / totalGiven).toFixed(2) : "–"}×</span>}
             />
           ) : (
             <Stat
               label="Pool claimed"
               value={<span className="text-community">{Math.round(Math.min(1, demand / campaign.matchingPool) * 100)}%</span>}
-              sub={coverage < 1 ? `Scaled to ${Math.round(coverage * 100)}%` : `${num(campaign.matchingPool - demand)} left`}
+              sub={coverage < 1 ? `Scaled to ${Math.round(coverage * 100)}%` : `${usd(campaign.matchingPool - demand)} left`}
             />
           )}
           <Stat
@@ -228,7 +228,7 @@ function CampaignPanel({ campaign, fund }: { campaign: Campaign; fund: Fund }) {
       <Card className="overflow-hidden">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <div className="text-sm font-semibold">{status === "ended" ? "Final results" : "Live match estimate"}</div>
-          <div className="text-xs text-muted-foreground">Only artUSD donations made in this round count toward matching</div>
+          <div className="text-xs text-muted-foreground">Donations in any pas token count at their dollar value</div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
@@ -332,7 +332,7 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
             <Button size="lg" onClick={() => setGiveOpen(true)}>
-              <HandCoins size={17} /> {fund.status === "proposed" ? "Pledge artUSD" : "Give to this fund"}
+              <HandCoins size={17} /> {fund.status === "proposed" ? "Pledge" : "Give to this fund"}
             </Button>
             <a href="#/allocate" className="inline-flex h-12 items-center gap-2 rounded-full border border-background/30 px-5 text-[15px] font-semibold hover:bg-background/10">
               <Vote size={17} /> Give points

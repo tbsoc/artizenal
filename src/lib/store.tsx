@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
-import { ASSETS, ASSET_IDS, fmtUnits, toUsd } from "./assets"
+import { ASSETS, ASSET_IDS, fmtUnits, money, setDisplayCurrency, toUsd } from "./assets"
 import type { Asset } from "./assets"
 import { campaignContributions, computeMatches, campaignMatches } from "./matching"
 import { PROJECT_DEPOSIT, PROPOSE_MIN_POINTS, STATE_VERSION, buildSeed, rng } from "./seed"
@@ -99,7 +99,7 @@ export function fundPledged(s: State, fundId: string) {
     .reduce((a, d) => a + d.amount, 0)
 }
 
-/** Units of an asset in the Wealth Fund: art tokens people hold plus permanent endowments. */
+/** Units of an asset in the Wealth Fund: pas tokens people hold plus permanent endowments. */
 export function wealthUnits(s: State, a: Asset) {
   return s.supply[a] + s.me.art[a] + s.endowed[a]
 }
@@ -224,7 +224,7 @@ function settleCampaigns(s: State) {
     c.settled = matches
     const paid = Object.values(matches).reduce((a, b) => a + b, 0)
     fund.reserve += Math.max(0, c.matchingPool - paid) // unspent pool returns to the fund
-    log(s, fund.curators[0], `closed ${c.name}: ${Math.round(paid).toLocaleString()} artUSD matched`, `#/f/${fund.id}`)
+    log(s, fund.curators[0], `closed ${c.name}: ${money(paid)} matched`, `#/f/${fund.id}`)
   }
 }
 
@@ -267,7 +267,7 @@ function distributeYield(s: State) {
     }
   }
   s.distributions.push({ season: s.season, day: s.day, total, shares, points: pts })
-  log(s, "system", `Season ${s.season} closed. ${Math.round(total).toLocaleString()} artUSD of yield was split across ${active.length} funds by points given`, "#/allocate")
+  log(s, "system", `Season ${s.season} closed. ${money(total)} of yield was split across ${active.length} funds by points given`, "#/allocate")
   s.yieldPool = 0
   s.season += 1
   s.seasonStartDay = s.day
@@ -366,6 +366,7 @@ export interface NewFund {
   pledgeGoal: number
   backingGoal: number
   initialPledge: number
+  pledgeAsset: Asset
 }
 
 export interface NewCampaign {
@@ -479,29 +480,49 @@ function useStoreValue() {
         })
       },
 
-      donateFund(fundId: string, amount: number, campaignId?: string): Result {
+      donateFund(fundId: string, asset: Asset, units: number, campaignId?: string): Result {
         return mutate((s) => {
-          if (amount <= 0) return { ok: false, error: "Enter an amount" }
-          if (amount > s.me.art.USD) return { ok: false, error: "Not enough artUSD. Convert some USDC first." }
+          const A = ASSETS[asset]
+          if (units <= 0) return { ok: false, error: "Enter an amount" }
+          if (units > s.me.art[asset] + 1e-9) return { ok: false, error: `Not enough ${A.token}. Convert some ${A.base} first.` }
           const f = getFund(s, fundId)!
-          s.me.art.USD -= amount
-          s.fundDonations.push({ id: uid("fd"), from: ME, fundId, campaignId, amount, day: s.day })
+          const amount = toUsd(asset, units)
+          s.me.art[asset] -= units
+          s.fundDonations.push({ id: uid("fd"), from: ME, fundId, campaignId, amount, asset, units, day: s.day })
           if (f.status === "active") {
             const c = campaignId ? s.campaigns.find((x) => x.id === campaignId) : undefined
             if (c) c.matchingPool += amount
             else f.reserve += amount
           }
           award(s, ME, amount * POINT_RULES.perFundBread, "donate-fund", `Gave to ${f.name}`)
-          log(s, ME, f.status === "proposed" ? `pledged ${amount} artUSD to launch ${f.name}` : `added ${amount} artUSD to ${f.name}`, `#/f/${f.id}`)
+          const what = `${fmtUnits(asset, units)} ${A.token}`
+          log(s, ME, f.status === "proposed" ? `pledged ${what} to launch ${f.name}` : `added ${what} to ${f.name}`, `#/f/${f.id}`)
           checkLaunches(s)
           return { ok: true }
+        })
+      },
+
+      setDisplay(a: Asset) {
+        mutate((s) => {
+          s.me.display = a
+        })
+      },
+
+      /** Switch the basket's currency, converting amounts so their value stays the same. */
+      setCartAsset(a: Asset) {
+        mutate((s) => {
+          const from = s.cartAsset ?? "USD"
+          if (from === a) return
+          for (const i of s.cart) i.amount = Number(((i.amount * ASSETS[from].usd) / ASSETS[a].usd).toFixed(ASSETS[a].digits))
+          s.cartAsset = a
         })
       },
 
       addToCart(projectId: string, campaignId: string, amount = 10) {
         mutate((s) => {
           const existing = s.cart.find((i) => i.projectId === projectId && i.campaignId === campaignId)
-          if (!existing) s.cart.push({ projectId, campaignId, amount })
+          const a = s.cartAsset ?? "USD"
+          if (!existing) s.cart.push({ projectId, campaignId, amount: Number((amount / ASSETS[a].usd).toFixed(ASSETS[a].digits)) })
         })
       },
       updateCart(projectId: string, campaignId: string, amount: number) {
@@ -517,13 +538,15 @@ function useStoreValue() {
       },
       checkout(): Result {
         return mutate((s) => {
+          const asset = s.cartAsset ?? "USD"
+          const A = ASSETS[asset]
           const items = s.cart.filter((i) => i.amount > 0)
           const total = items.reduce((a, i) => a + i.amount, 0)
           if (!items.length) return { ok: false, error: "Your basket is empty" }
-          if (total > s.me.art.USD) return { ok: false, error: `You need ${total} artUSD. Convert a little more USDC first.` }
-          s.me.art.USD -= total
-          for (const i of items) addDonation(s, ME, i.projectId, "USD", i.amount, i.campaignId)
-          log(s, ME, `backed ${items.length} projects with ${total} artUSD`)
+          if (total > s.me.art[asset] + 1e-9) return { ok: false, error: `You need ${fmtUnits(asset, total)} ${A.token}. Convert a little more ${A.base} first.` }
+          s.me.art[asset] -= total
+          for (const i of items) addDonation(s, ME, i.projectId, asset, i.amount, i.campaignId)
+          log(s, ME, `backed ${items.length} projects with ${fmtUnits(asset, total)} ${A.token}`)
           s.cart = []
           refundDeposits(s)
           return { ok: true }
@@ -532,7 +555,7 @@ function useStoreValue() {
 
       createProject(p: NewProject): Result {
         return mutate((s) => {
-          if (s.me.art.USD < PROJECT_DEPOSIT) return { ok: false, error: `You need ${PROJECT_DEPOSIT} artUSD for the deposit` }
+          if (s.me.art.USD < PROJECT_DEPOSIT) return { ok: false, error: `You need ${PROJECT_DEPOSIT} pasUSD for the deposit` }
           const base = p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "project"
           let id = base
           let n = 2
@@ -589,7 +612,8 @@ function useStoreValue() {
         return mutate((s) => {
           if (userPoints(s, ME) < PROPOSE_MIN_POINTS)
             return { ok: false, error: `You need ${PROPOSE_MIN_POINTS.toLocaleString()} points to propose a fund` }
-          if (f.initialPledge > s.me.art.USD) return { ok: false, error: "Not enough artUSD for that pledge" }
+          const pa = f.pledgeAsset
+          if (f.initialPledge > s.me.art[pa] + 1e-9) return { ok: false, error: `Not enough ${ASSETS[pa].token} for that pledge` }
           const base = f.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "fund"
           let id = base
           let n = 2
@@ -615,9 +639,10 @@ function useStoreValue() {
           award(s, ME, POINT_RULES.proposeFund, "propose-fund", `Proposed ${f.name}`)
           log(s, ME, `proposed the fund ${f.name}`, `#/f/${id}`)
           if (f.initialPledge > 0) {
-            s.me.art.USD -= f.initialPledge
-            s.fundDonations.push({ id: uid("fd"), from: ME, fundId: id, amount: f.initialPledge, day: s.day })
-            award(s, ME, f.initialPledge * POINT_RULES.perFundBread, "donate-fund", `Pledged to ${f.name}`)
+            const usdValue = toUsd(pa, f.initialPledge)
+            s.me.art[pa] -= f.initialPledge
+            s.fundDonations.push({ id: uid("fd"), from: ME, fundId: id, amount: usdValue, asset: pa, units: f.initialPledge, day: s.day })
+            award(s, ME, usdValue * POINT_RULES.perFundBread, "donate-fund", `Pledged to ${f.name}`)
           }
           checkLaunches(s)
           return { ok: true, id }
@@ -694,7 +719,7 @@ function useStoreValue() {
             autoCurate(s)
           }
           const whole = Math.floor(holding)
-          if (whole > 0) award(s, ME, whole, "holding", `Held artUSD for ${days} day${days > 1 ? "s" : ""}`)
+          if (whole > 0) award(s, ME, whole, "holding", `Held pas tokens for ${days} day${days > 1 ? "s" : ""}`)
           s.me.holdingCarry = holding - whole
         })
       },
@@ -756,6 +781,8 @@ const Ctx = createContext<Store | null>(null)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const value = useStoreValue()
+  // Totals everywhere are formatted in the viewer's display currency.
+  setDisplayCurrency(value.state.me.display ?? "USD")
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 

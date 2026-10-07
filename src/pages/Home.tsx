@@ -36,7 +36,7 @@ function MatchingPool() {
       </div>
       <div className="flex flex-col gap-2">
         <LinkButton href="#/wallet" size="lg" className="w-full lg:w-auto">
-          <Loaf size={16} /> Create art tokens
+          <Loaf size={16} /> Create pas tokens
         </LinkButton>
         <LinkButton href="#/wealth" size="sm" variant="ghost" className="w-full lg:w-auto">
           Endow the Wealth Fund
@@ -49,7 +49,7 @@ function MatchingPool() {
 function Checklist() {
   const { state, actions } = useStore()
   const steps = [
-    { done: state.me.base.USD < START_USDC, label: "Get art tokens", href: "#/wallet" },
+    { done: state.me.base.USD < START_USDC, label: "Get pas tokens", href: "#/wallet" },
     { done: state.donations.some((d) => d.from === ME && d.campaignId), label: "Back a project", href: "#/f/artizen-rescue" },
     { done: state.pointGifts.some((g) => g.userId === ME), label: "Give points", href: "#/allocate" },
     { done: state.users.some((u) => u.referredBy === ME), label: "Invite a friend", href: "#/points" },
@@ -90,10 +90,10 @@ function Checklist() {
 }
 
 const FLOW = [
-  { icon: Landmark, title: "Hold or endow", text: "artUSD, artEUR or artETH, 1:1. Or give principal for good." },
+  { icon: Landmark, title: "Hold or endow", text: "pasUSD, pasEUR or pasETH, 1:1. Or give principal for good." },
   { icon: Sprout, title: "DeFi earns", text: "Reserves earn yield in DeFi savings and staking." },
   { icon: Vote, title: "Points split it", text: "Funds get yield in proportion to points given." },
-  { icon: HandCoins, title: "Rounds match", text: "Funds match artUSD donations to projects." },
+  { icon: HandCoins, title: "Rounds match", text: "Funds match donations in any pas token." },
 ]
 
 export function Home() {

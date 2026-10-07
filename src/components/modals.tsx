@@ -9,7 +9,7 @@ import { cn, num, usd } from "@/lib/utils"
 import { ASSETS, ASSET_IDS, fmtUnits, toUsd } from "@/lib/assets"
 import type { Asset } from "@/lib/assets"
 
-/** Inline helper shown when the user doesn't hold enough of an art token. */
+/** Inline helper shown when the user doesn't hold enough of a pas token. */
 export function QuickBake({ need, asset = "USD" }: { need: number; asset?: Asset }) {
   const { state, actions, toast } = useStore()
   const A = ASSETS[asset]
@@ -101,7 +101,7 @@ export function DonateModal({
             You gave {done.label} to {project.title}
             {done.match > 0.5 && (
               <>
-                , which unlocked about <b className="text-community">${num(done.match)}</b> in matching
+                , which unlocked about <b className="text-community">{usd(done.match)}</b> in matching
               </>
             )}
             .
@@ -210,17 +210,54 @@ export function DonateModal({
   )
 }
 
+/** Three-way picker for which pas token to pay with, showing what you hold. */
+export function AssetPicker({ value, onChange }: { value: Asset; onChange: (a: Asset) => void }) {
+  const { state } = useStore()
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {ASSET_IDS.map((a) => (
+        <button
+          key={a}
+          onClick={() => onChange(a)}
+          className={cn(
+            "rounded-xl border-2 px-3 py-2 text-left transition cursor-pointer",
+            value === a ? "border-primary bg-primary/5" : "border-border hover:border-muted-foreground/30"
+          )}
+        >
+          <div className="text-sm font-semibold">{ASSETS[a].token}</div>
+          <div className="text-xs text-muted-foreground tabular-nums">{fmtUnits(a, state.me.art[a])} held</div>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+const FUND_PRESETS: Record<Asset, number[]> = {
+  USD: [25, 50, 100, 250, 500],
+  EUR: [25, 50, 100, 250, 500],
+  ETH: [0.01, 0.02, 0.05, 0.1, 0.2],
+}
+
 export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boolean; onClose: () => void }) {
   const { state, actions, toast } = useStore()
   const live = state.campaigns.filter((c) => c.fundId === fund.id && campaignStatus(c, state.day) !== "ended")
-  const [amount, setAmount] = useState(50)
+  const [asset, setAsset] = useState<Asset>("USD")
+  const [units, setUnits] = useState(50)
   const [target, setTarget] = useState(live[0]?.id ?? "")
   const proposed = fund.status === "proposed"
+  const A = ASSETS[asset]
+  const value = toUsd(asset, units)
+  const points = Math.round(value * POINT_RULES.perFundBread)
+
+  const pick = (a: Asset) => {
+    setAsset(a)
+    setUnits(FUND_PRESETS[a][1])
+  }
 
   const submit = () => {
-    const r = actions.donateFund(fund.id, amount, proposed ? undefined : target || undefined)
+    const r = actions.donateFund(fund.id, asset, units, proposed ? undefined : target || undefined)
     if (!r.ok) return toast(r.error, "err")
-    toast(`+${num(amount * POINT_RULES.perFundBread)} points. Thanks!`)
+    toast(`+${num(points)} points. Thanks!`)
     onClose()
   }
 
@@ -228,25 +265,29 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
     <Modal open={open} onClose={onClose} title={proposed ? `Pledge to launch ${fund.name}` : `Give to ${fund.name}`}>
       <div className="space-y-5">
         <p className="text-sm text-muted-foreground">
-          {proposed
-            ? "Held until the fund launches, then used for matching."
-            : "Becomes matching money for the fund's rounds."}{" "}
-          <b className="text-coop-ink">{POINT_RULES.perFundBread} points per artUSD.</b>
+          {proposed ? "Held until the fund launches, then used for matching." : "Becomes matching money for the fund's rounds."}{" "}
+          <b className="text-coop-ink">{POINT_RULES.perFundBread} points per $1.</b>
         </p>
-        <div className="flex flex-wrap gap-2">
-          {[25, 50, 100, 250, 500].map((p) => (
-            <button
-              key={p}
-              onClick={() => setAmount(p)}
-              className={cn(
-                "h-10 flex-1 rounded-xl border text-sm font-semibold transition cursor-pointer",
-                amount === p ? "border-foreground bg-foreground text-background" : "border-border hover:bg-muted"
-              )}
-            >
-              {p}
-            </button>
-          ))}
-          <Input type="number" value={amount || ""} onChange={(e) => setAmount(Math.max(0, Number(e.target.value)))} className="h-10 w-full sm:w-28" />
+        <AssetPicker value={asset} onChange={pick} />
+        <div>
+          <div className="flex flex-wrap gap-2">
+            {FUND_PRESETS[asset].map((p) => (
+              <button
+                key={p}
+                onClick={() => setUnits(p)}
+                className={cn(
+                  "h-10 flex-1 rounded-xl border text-sm font-semibold transition cursor-pointer",
+                  units === p ? "border-foreground bg-foreground text-background" : "border-border hover:bg-muted"
+                )}
+              >
+                {p}
+              </button>
+            ))}
+            <Input type="number" step="any" value={units || ""} onChange={(e) => setUnits(Math.max(0, Number(e.target.value)))} className="h-10 w-full sm:w-28" />
+          </div>
+          <div className="mt-1.5 text-xs text-muted-foreground">
+            ≈ {usd(value)} · Balance {fmtUnits(asset, state.me.art[asset])} {A.token}
+          </div>
         </div>
         {!proposed && (
           <Field label="To">
@@ -260,11 +301,11 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
             </Select>
           </Field>
         )}
-        {amount > state.me.art.USD && <QuickBake need={amount} />}
+        {units > state.me.art[asset] && <QuickBake need={units} asset={asset} />}
         <div className="flex items-center justify-between border-t border-border pt-4">
-          <Pts value={amount * POINT_RULES.perFundBread} className="text-sm font-semibold text-coop-ink" />
-          <Button size="lg" onClick={submit} disabled={amount <= 0 || amount > state.me.art.USD}>
-            {proposed ? "Pledge" : "Give"} {num(amount)} artUSD
+          <Pts value={points} className="text-sm font-semibold text-coop-ink" />
+          <Button size="lg" onClick={submit} disabled={units <= 0 || units > state.me.art[asset] + 1e-9}>
+            {proposed ? "Pledge" : "Give"} {fmtUnits(asset, units)} {A.token}
           </Button>
         </div>
       </div>
@@ -274,17 +315,20 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
 
 export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { state, actions, toast } = useStore()
+  const asset = state.cartAsset ?? "USD"
+  const A = ASSETS[asset]
   const groups = useMemo(() => {
     const m = new Map<string, typeof state.cart>()
     for (const i of state.cart) m.set(i.campaignId, [...(m.get(i.campaignId) ?? []), i])
     return [...m.entries()]
   }, [state.cart])
   const total = state.cart.reduce((a, i) => a + i.amount, 0)
+  const totalUsd = toUsd(asset, total)
   let totalMatch = 0
   const groupMatches = groups.map(([cid, items]) => {
     const c = state.campaigns.find((x) => x.id === cid)!
     const f = getFund(state, c.fundId)!
-    const r = basketMatch(c, f.mechanism, state.donations, ME, items)
+    const r = basketMatch(c, f.mechanism, state.donations, ME, items.map((i) => ({ projectId: i.projectId, amount: toUsd(asset, i.amount) })))
     totalMatch += r.total
     return r
   })
@@ -294,10 +338,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
     <div className="fixed inset-0 z-40 flex justify-end bg-foreground/30 animate-in" onMouseDown={onClose}>
       <div className="slide-in flex h-full w-full flex-col sm:w-[460px] bg-card shadow-2xl" onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
-          <div>
-            <div className="font-display text-2xl font-semibold">Your basket</div>
-            
-          </div>
+          <div className="font-display text-2xl font-semibold">Your basket</div>
           <button onClick={onClose} className="rounded-full p-1.5 text-muted-foreground hover:bg-muted cursor-pointer" aria-label="Close basket">
             <X size={18} />
           </button>
@@ -307,6 +348,12 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
             <div className="py-16 text-center text-sm text-muted-foreground">
               <ShoppingBasket className="mx-auto mb-3 text-border" size={40} />
               Collect projects from any live round.
+            </div>
+          )}
+          {groups.length > 0 && (
+            <div>
+              <div className="mb-2 text-sm font-semibold">Pay with</div>
+              <AssetPicker value={asset} onChange={actions.setCartAsset} />
             </div>
           )}
           {groups.map(([cid, items], gi) => {
@@ -331,13 +378,15 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="truncate text-sm font-semibold">{p.title}</div>
-                          <div className="text-xs text-community">+{num(groupMatches[gi].perProject[p.id] ?? 0, 1)} match</div>
+                          <div className="text-xs text-community">+{usd(groupMatches[gi].perProject[p.id] ?? 0, true)} match</div>
                         </div>
                         <Input
                           type="number"
+                          step="any"
                           value={i.amount || ""}
                           onChange={(e) => actions.updateCart(i.projectId, cid, Number(e.target.value))}
-                          className="h-9 w-20 text-right"
+                          className="h-9 w-24 text-right"
+                          aria-label={`Amount in ${A.token}`}
                         />
                         <button onClick={() => actions.removeFromCart(i.projectId, cid)} className="p-1.5 text-muted-foreground hover:text-destructive cursor-pointer" aria-label="Remove">
                           <Trash2 size={15} />
@@ -354,7 +403,9 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
           <div className="space-y-3 border-t border-border bg-muted/40 px-6 py-5">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">You give</span>
-              <Bread value={total} className="font-semibold" />
+              <span className="font-semibold tabular-nums">
+                {fmtUnits(asset, total)} {A.token} <span className="font-normal text-muted-foreground">≈ {usd(totalUsd)}</span>
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Matching you unlock</span>
@@ -362,21 +413,21 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Points earned</span>
-              <Pts value={total * POINT_RULES.perBread} className="font-semibold text-coop-ink" />
+              <Pts value={totalUsd * POINT_RULES.perBread} className="font-semibold text-coop-ink" />
             </div>
-            {total > state.me.art.USD && <QuickBake need={total} />}
+            {total > state.me.art[asset] && <QuickBake need={total} asset={asset} />}
             <Button
               size="lg"
               className="w-full"
-              disabled={total <= 0 || total > state.me.art.USD}
+              disabled={total <= 0 || total > state.me.art[asset] + 1e-9}
               onClick={() => {
                 const r = actions.checkout()
                 if (!r.ok) return toast(r.error, "err")
-                toast(`Backed ${state.cart.length} projects. ~${num(totalMatch)} artUSD of matching unlocked!`)
+                toast(`Backed ${state.cart.length} projects. ~${usd(totalMatch)} of matching unlocked!`)
                 onClose()
               }}
             >
-              Give <Bread value={total} unitClass="text-primary-foreground/80" /> to {state.cart.length} projects
+              Give {fmtUnits(asset, total)} {A.token} to {state.cart.length} projects
             </Button>
           </div>
         )}
@@ -399,7 +450,7 @@ const PRINCIPLES = [
   {
     icon: ShieldCheck,
     title: "Funds aren't put at risk",
-    text: "Only interest pays for matching. Art tokens are redeemable 1:1 any time.",
+    text: "Only interest pays for matching. Pas tokens are redeemable 1:1 any time.",
   },
 ]
 

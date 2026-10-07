@@ -68,9 +68,9 @@ export interface Fund {
   proposedBy: string
   mechanism: Mechanism
   status: FundStatus
-  reserve: number // unassigned artUSD held by the fund
+  reserve: number // unassigned pasUSD held by the fund
   autoStream: boolean // route yield share straight into live campaigns
-  pledgeGoal: number // proposed funds: artUSD needed to launch
+  pledgeGoal: number // proposed funds: pasUSD needed to launch
   backingGoal: number // proposed funds: points needed to launch
   coverSeed: number
   createdDay: number
@@ -95,7 +95,7 @@ export interface Donation {
   campaignId?: string
   amount: number // dollar value; matching and totals use this
   asset: Asset
-  units: number // amount in the art token actually given
+  units: number // amount in the pas token actually given
   day: number
 }
 
@@ -114,7 +114,9 @@ export interface FundDonation {
   from: string
   fundId: string
   campaignId?: string // undefined = fund reserve / launch pledge
-  amount: number
+  amount: number // dollar value
+  asset: Asset
+  units: number
   day: number
 }
 
@@ -176,12 +178,13 @@ export interface CartItem {
 
 export interface Me {
   base: Record<Asset, number> // USDC, EURC, ETH
-  art: Record<Asset, number> // artUSD, artEUR, artETH
+  art: Record<Asset, number> // pasUSD, pasEUR, pasETH
   onboarded: boolean
   referralCode: string
   yieldGenerated: number
   holdingCarry: number // fractional holding points not yet awarded
   onboardingDismissed?: boolean
+  display?: Asset // currency totals are shown in
 }
 
 export interface State {
@@ -190,7 +193,7 @@ export interface State {
   season: number
   seasonStartDay: number
   seasonLength: number
-  supply: Record<Asset, number> // art tokens held by other members (redeemable)
+  supply: Record<Asset, number> // pas tokens held by other members (redeemable)
   endowed: Record<Asset, number> // permanent principal from everyone, in units
   yieldPool: number
   yieldLifetime: number
@@ -207,4 +210,5 @@ export interface State {
   activity: Activity[]
   distributions: Distribution[]
   cart: CartItem[]
+  cartAsset?: Asset
 }

@@ -24,19 +24,19 @@ export const MECHANISM_INFO: Record<
     name: "1:1 match with cap",
     short: "1:1",
     explain:
-      "Every artUSD donated is matched one-for-one, up to a cap per donor per project. If demand exceeds the pool, everything is scaled down evenly.",
+      "Every pasUSD donated is matched one-for-one, up to a cap per donor per project. If demand exceeds the pool, everything is scaled down evenly.",
   },
   multiplier: {
     name: "Fixed multiplier",
     short: "×",
     explain:
-      "Each artUSD donated unlocks a fixed multiple from the pool. If demand exceeds the pool, everything is scaled down evenly.",
+      "Each pasUSD donated unlocks a fixed multiple from the pool. If demand exceeds the pool, everything is scaled down evenly.",
   },
 }
 
 export function mechanismLabel(m: Mechanism) {
   if (m.type === "qf") return "Quadratic funding"
-  if (m.type === "match") return `1:1 match, up to ${m.cap} artUSD per donor`
+  if (m.type === "match") return `1:1 match, up to ${m.cap} pasUSD per donor`
   return `${m.x}× multiplier`
 }
 
@@ -157,7 +157,7 @@ function matchDelta(
   return perProject
 }
 
-/** Extra match a project would receive if `donor` gave `amount` more artUSD now. */
+/** Extra match a project would receive if `donor` gave `amount` more pasUSD now. */
 export function marginalMatch(
   campaign: Campaign,
   mechanism: Mechanism,

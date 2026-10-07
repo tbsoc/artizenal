@@ -14,7 +14,7 @@ import {
   useStore,
 } from "@/lib/store"
 import { campaignMatches } from "@/lib/matching"
-import { dayLabel, num } from "@/lib/utils"
+import { dayLabel, usd } from "@/lib/utils"
 
 export function ProjectPage({ id }: { id: string }) {
   const { state, actions, toast } = useStore()
@@ -169,8 +169,8 @@ export function ProjectPage({ id }: { id: string }) {
 
         <aside className="space-y-4">
           <Card className="sticky top-24 p-6">
-            <div className="font-display text-4xl font-semibold tabular-nums">${num(stats.total + stats.pendingMatch)}</div>
-            <div className="mt-1 text-sm text-muted-foreground">raised of ${num(project.goal)} goal</div>
+            <div className="font-display text-4xl font-semibold tabular-nums">{usd(stats.total + stats.pendingMatch)}</div>
+            <div className="mt-1 text-sm text-muted-foreground">raised of {usd(project.goal)} goal</div>
             <Progress value={(stats.total / project.goal) * 100} extra={(stats.pendingMatch / project.goal) * 100} className="mt-4 h-2.5" />
             <div className="mt-4 grid grid-cols-2 gap-y-3 text-sm">
               <div>
@@ -267,7 +267,7 @@ export function ProjectPage({ id }: { id: string }) {
               <div>
                 <div className="font-semibold text-foreground">
                   {project.deposit.status === "held"
-                    ? `${project.deposit.amount} artUSD spam deposit held`
+                    ? `${project.deposit.amount} pasUSD spam deposit held`
                     : project.deposit.status === "refunded"
                       ? "Spam deposit returned"
                       : "Deposit forfeited to the commons"}

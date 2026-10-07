@@ -1,3 +1,4 @@
+import { money } from "./assets"
 import { clsx } from "clsx"
 import type { ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -6,13 +7,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/** Format a dollar value in the viewer's display currency (USD by default). */
 export function usd(amount: number, cents = false) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: cents ? 2 : 0,
-    maximumFractionDigits: cents ? 2 : 0,
-  }).format(amount)
+  return money(amount, cents)
 }
 
 export function num(n: number, digits = 0) {

@@ -69,7 +69,7 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
       campaignIds,
     })
     if (!r.ok) return toast(r.error, "err")
-    toast(`Project live! ${PROJECT_DEPOSIT} artUSD deposit held, +${num(points)} points`)
+    toast(`Project live! ${PROJECT_DEPOSIT} pasUSD deposit held, +${num(points)} points`)
     go(`/p/${r.id}`)
   }
 
@@ -221,7 +221,7 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
               <ShieldCheck size={17} className="text-success" /> Refundable spam deposit
             </div>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              <b className="text-foreground">{PROJECT_DEPOSIT} artUSD</b>, returned after 3 backers or 14 days.
+              <b className="text-foreground">{PROJECT_DEPOSIT} pasUSD</b>, returned after 3 backers or 14 days.
             </p>
             <div className="mt-4 flex items-center justify-between rounded-xl bg-muted px-4 py-3 text-sm">
               <span className="text-muted-foreground">Your balance</span>

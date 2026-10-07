@@ -33,7 +33,7 @@ export function Funds() {
             { id: "proposed", label: `Proposed (${proposedCount})` },
           ]}
         />
-        {tab === "proposed" && <p className="-mt-2 mb-6 text-sm text-muted-foreground">Launches once it hits its artUSD and points goals.</p>}
+        {tab === "proposed" && <p className="-mt-2 mb-6 text-sm text-muted-foreground">Launches once it hits its funding and points goals.</p>}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {funds.map((f) => (
             <FundCard key={f.id} fund={f} />

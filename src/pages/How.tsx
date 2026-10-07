@@ -6,16 +6,16 @@ import { num } from "@/lib/utils"
 
 const QA: { q: string; a: string }[] = [
   {
-    q: "What are artUSD, artEUR and artETH?",
-    a: "Art tokens built on the Bread Cooperative stack. Each is created 1:1 from USDC, EURC or ETH and can be redeemed any time.",
+    q: "What are pasUSD, pasEUR and pasETH?",
+    a: "Pas tokens built on the Bread Cooperative stack. Each is created 1:1 from USDC, EURC or ETH and can be redeemed any time.",
   },
   {
-    q: "How do art tokens earn yield?",
+    q: "How do pas tokens earn yield?",
     a: "The USDC, EURC and ETH behind them are put to work in DeFi: dollar and euro savings protocols, and ETH staking. You keep your tokens and can redeem them 1:1; the yield they earn goes to matching.",
   },
   {
     q: "Where does the matching money come from?",
-    a: "The Pastry Wealth Fund: everything behind the art tokens, plus permanent endowments. Its savings and staking yield is split between funds each season. Principal is never spent.",
+    a: "The Pastry Wealth Fund: everything behind the pas tokens, plus permanent endowments. Its savings and staking yield is split between funds each season. Principal is never spent.",
   },
   {
     q: "What does endowing mean?",
@@ -27,7 +27,7 @@ const QA: { q: string; a: string }[] = [
   },
   {
     q: "Why is there a deposit to create a project?",
-    a: `To keep spam out. ${PROJECT_DEPOSIT} artUSD, returned after 3 backers or 14 days.`,
+    a: `To keep spam out. ${PROJECT_DEPOSIT} pasUSD, returned after 3 backers or 14 days.`,
   },
   {
     q: "I was on Artizen. What happens to my project?",
@@ -44,7 +44,7 @@ export function How() {
     <div className="mx-auto max-w-4xl space-y-12">
       <div className="text-center">
         <h1 className="font-display text-3xl leading-tight md:text-[48px] font-semibold tracking-tight">How Pastry works</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-lg text-muted-foreground">Holding art tokens pays for matching. Members decide where it goes.</p>
+        <p className="mx-auto mt-3 max-w-2xl text-lg text-muted-foreground">Holding pas tokens pays for matching. Members decide where it goes.</p>
       </div>
 
       <div>

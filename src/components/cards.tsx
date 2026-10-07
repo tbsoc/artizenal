@@ -13,7 +13,7 @@ import {
 } from "@/lib/store"
 import { campaignMatches } from "@/lib/matching"
 import type { Campaign, Fund, Project } from "@/lib/types"
-import { cn, num } from "@/lib/utils"
+import { cn, num, usd } from "@/lib/utils"
 
 export function ProjectCard({ project, campaign, className }: { project: Project; campaign?: Campaign; className?: string }) {
   const { state, actions, toast } = useStore()
@@ -51,8 +51,8 @@ export function ProjectCard({ project, campaign, className }: { project: Project
             <Progress value={(stats.total / project.goal) * 100} extra={(stats.pendingMatch / project.goal) * 100} />
             <div className="mt-2 flex items-baseline justify-between text-xs">
               <span>
-                <span className="text-sm font-semibold text-foreground">${num(raised)}</span>
-                <span className="text-muted-foreground"> of ${num(project.goal)}</span>
+                <span className="text-sm font-semibold text-foreground">{usd(raised)}</span>
+                <span className="text-muted-foreground"> of {usd(project.goal)}</span>
               </span>
               <span className="text-muted-foreground">{stats.donors} donors</span>
             </div>
@@ -130,7 +130,7 @@ export function FundCard({ fund }: { fund: Fund }) {
                 <div className="mb-1 flex justify-between text-muted-foreground">
                   <span>Pledged</span>
                   <span>
-                    {num(pledged)} / {num(fund.pledgeGoal)} artUSD
+                    {usd(pledged)} / {usd(fund.pledgeGoal)}
                   </span>
                 </div>
                 <Progress value={(pledged / fund.pledgeGoal) * 100} />

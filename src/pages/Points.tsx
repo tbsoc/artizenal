@@ -14,11 +14,11 @@ const TIERS = [
 ]
 
 const EARN = [
-  { icon: HandCoins, title: "Back a project with artUSD", value: `${POINT_RULES.perBread} per artUSD`, note: "Matched" },
-  { icon: Landmark, title: "Give to a fund", value: `${POINT_RULES.perFundBread} per artUSD`, note: "Double points" },
+  { icon: HandCoins, title: "Back a project", value: `${POINT_RULES.perBread} per $1`, note: "Matched" },
+  { icon: Landmark, title: "Give to a fund", value: `${POINT_RULES.perFundBread} per $1`, note: "Double points" },
   { icon: UserPlus, title: "Invite a friend", value: `${POINT_RULES.referral} + 10%`, note: "Plus 10% of theirs" },
   { icon: Star, title: "Be an early backer", value: `+${POINT_RULES.earlyBacker}`, note: `First ${POINT_RULES.earlyBackerSlots} donors` },
-  { icon: Sprout, title: "Hold artUSD", value: "1 per 10 / day", note: "Daily" },
+  { icon: Sprout, title: "Hold pas tokens", value: "1 per $10 / day", note: "Daily" },
   { icon: Rocket, title: "Launch a project", value: `+${POINT_RULES.createProject}`, note: "One time" },
   { icon: Landmark, title: "Endow the Wealth Fund", value: `${POINT_RULES.perEndowedUsd} per $1`, note: "Permanent" },
   { icon: History, title: "Artizen alumni", value: `+${num(POINT_RULES.artizenAlumni)}`, note: "One time" },
@@ -32,7 +32,7 @@ const REASON_LABEL: Record<string, string> = {
   "donate-bread": "Donation",
   "donate-fund": "Fund gift",
   "early-backer": "Early backer",
-  holding: "Holding artUSD",
+  holding: "Holding",
   "create-project": "New project",
   "artizen-alumni": "Artizen alumni",
   "propose-fund": "Proposed fund",

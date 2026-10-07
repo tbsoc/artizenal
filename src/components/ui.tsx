@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import type { ReactNode } from "react"
 import { X, Sparkles, History } from "lucide-react"
 import { cn, initials, num } from "@/lib/utils"
+import { money } from "@/lib/assets"
 import type { Mechanism, User } from "@/lib/types"
 import { MECHANISM_INFO } from "@/lib/matching"
 import type { CampaignStatus } from "@/lib/store"
@@ -236,7 +237,7 @@ export function Tabs<T extends string>({
   )
 }
 
-/** A little loaf, used wherever artUSD appears. */
+/** A little loaf, used for pas tokens. */
 export function Loaf({ size = 14, className }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={cn("inline-block shrink-0", className)} aria-hidden>
@@ -257,7 +258,7 @@ export function Bread({
   digits = 0,
   className,
   unitClass,
-  unit = "artUSD",
+  unit,
 }: {
   value: number
   digits?: number
@@ -265,6 +266,7 @@ export function Bread({
   unitClass?: string
   unit?: string
 }) {
+  if (!unit) return <span className={cn("tabular-nums", className)}>{money(value, digits > 0)}</span>
   return (
     <span className={cn("inline-flex items-baseline gap-1 tabular-nums", className)}>
       {num(value, digits)}

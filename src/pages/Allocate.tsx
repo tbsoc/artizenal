@@ -1,7 +1,7 @@
 import { Badge, Bread, Card, LiveYield, Pts, SectionTitle, Stat, MechanismBadge, PointsTabs } from "@/components/ui"
 import { Cover } from "@/components/Cover"
 import { ME, dailyYield, fundTotalPoints, getFund, pointsBalance, seasonRatios, useStore } from "@/lib/store"
-import { num } from "@/lib/utils"
+import { num, usd } from "@/lib/utils"
 import { confettiFrom } from "@/lib/confetti"
 
 const BAR_COLORS = ["#d9762b", "#2f8f6b", "#3d5a99", "#b5466b", "#8a6d2b", "#6b4ea0", "#2a8d9d", "#a05a2c"]
@@ -88,7 +88,7 @@ export function Allocate() {
           {isActive ? (
             <>
               <div className="font-semibold tabular-nums">{(after.ratio[fid] * 100).toFixed(1)}%</div>
-              <div className="text-xs text-muted-foreground tabular-nums">≈ {num(seasonEstimate * after.ratio[fid])} artUSD</div>
+              <div className="text-xs text-muted-foreground tabular-nums">≈ {usd(seasonEstimate * after.ratio[fid])}</div>
             </>
           ) : (
             <div className="text-xs text-muted-foreground">{Math.round((fundTotalPoints(state, fid) / f.backingGoal) * 100)}% to launch</div>
@@ -230,7 +230,7 @@ export function Allocate() {
                         d.shares[f.id] ? (
                           <div
                             key={f.id}
-                            title={`${f.name}: ${num(d.points?.[f.id] ?? 0)} points → ${num(d.shares[f.id])} artUSD`}
+                            title={`${f.name}: ${num(d.points?.[f.id] ?? 0)} points → ${usd(d.shares[f.id])}`}
                             style={{ width: `${(d.shares[f.id] / d.total) * 100}%`, background: colorOf(f.id) }}
                           />
                         ) : null
