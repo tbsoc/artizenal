@@ -6,6 +6,7 @@ import { POINT_RULES, campaignStatus, getFund, getProject, ME, useStore } from "
 import { basketMatch, marginalMatch, MECHANISM_INFO } from "@/lib/matching"
 import type { Fund, Project } from "@/lib/types"
 import { cn, num, usd } from "@/lib/utils"
+import { isSubscribed, subscribe } from "@/lib/signup"
 import { ASSETS, ASSET_IDS, fmtUnits, toUsd } from "@/lib/assets"
 import type { Asset } from "@/lib/assets"
 
@@ -515,6 +516,10 @@ export function Onboarding() {
   const [step, setStep] = useState<"about" | "join">("about")
   const [name, setName] = useState("")
   const [code, setCode] = useState("")
+  const [email, setEmail] = useState("")
+  const [needsEmail] = useState(() => !isSubscribed())
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState("")
   if (state.me.onboarded) return null
   if (step === "about")
     return (
@@ -533,8 +538,15 @@ export function Onboarding() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-6 backdrop-blur-sm">
       <form
         className="pop-in w-full max-w-[440px] space-y-5 rounded-3xl bg-card p-8 shadow-2xl"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault()
+          if (needsEmail) {
+            setBusy(true)
+            setError("")
+            const r = await subscribe(email)
+            setBusy(false)
+            if (!r.ok) return setError(r.error)
+          }
           actions.onboard(name, code || undefined)
         }}
       >
@@ -542,8 +554,13 @@ export function Onboarding() {
           <BreadLogo size={30} />
           <h2 className="font-display text-2xl font-semibold">Join Pastry</h2>
         </div>
+        {needsEmail && (
+          <Field label="Email" hint="Signs you up for the Bread Cooperative newsletter on Paragraph. Required to try the showcase.">
+            <Input autoFocus type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" autoComplete="email" />
+          </Field>
+        )}
         <Field label="Name">
-          <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Sam Baker" />
+          <Input autoFocus={!needsEmail} value={name} onChange={(e) => setName(e.target.value)} placeholder="Sam Baker" />
         </Field>
         <Field
           label="Invite code (optional)"
@@ -558,8 +575,9 @@ export function Onboarding() {
         <div className="flex items-center gap-2 text-sm text-coop-ink">
           <Sparkles size={15} /> {POINT_RULES.welcome} welcome points, plus some USDC, EURC and ETH to try things with
         </div>
-        <Button size="lg" className="w-full" type="submit" disabled={!name.trim()}>
-          Enter <ArrowRight size={16} />
+        {error && <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>}
+        <Button size="lg" className="w-full" type="submit" disabled={busy || !name.trim() || (needsEmail && !email.trim())}>
+          {busy ? "Signing you up…" : needsEmail ? "Subscribe & enter" : "Enter"} {!busy && <ArrowRight size={16} />}
         </Button>
       </form>
     </div>

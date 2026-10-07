@@ -1,0 +1,6 @@
+name = "pastry-signup"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# The Paragraph API key is stored as a secret, never in this file:
+#   npx wrangler secret put PARAGRAPH_API_KEY

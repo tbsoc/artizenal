@@ -31,3 +31,13 @@ State lives in `localStorage`. Use "Reset demo" in the time machine to start ove
 - `src/lib/store.tsx`: simulation engine (actions, points, yield, settlement)
 - `src/lib/seed.ts`: the seeded world
 - `src/pages/*`: one file per screen
+
+## Newsletter gate
+
+New visitors enter an email before the showcase opens. It's sent to `worker/`, a Cloudflare Worker at `https://pastry-signup.pastrycoop.workers.dev`, which adds it to the Bread Cooperative newsletter on Paragraph. The Paragraph API key is stored as a Worker secret, never in this repo.
+
+```bash
+cd worker
+npx wrangler deploy
+npx wrangler secret put PARAGRAPH_API_KEY
+```
