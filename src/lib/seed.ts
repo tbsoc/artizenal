@@ -17,6 +17,8 @@ import type {
 export const STATE_VERSION = 10
 export const PROJECT_DEPOSIT = 25
 export const PROPOSE_MIN_POINTS = 1000
+/** A proposed fund must raise at least this much matching money (in dollars) before it can launch. */
+export const MIN_FUND_PLEDGE = 1000
 export const START_USDC = 750
 export const START_BASE: Record<Asset, number> = { USD: 750, EUR: 400, ETH: 0.25 }
 export const START_ART: Record<Asset, number> = { USD: 250, EUR: 100, ETH: 0.05 }

@@ -6,7 +6,7 @@ import { AssetPicker, QuickBake } from "@/components/modals"
 import { ASSETS, fmtUnits, toUsd } from "@/lib/assets"
 import type { Asset } from "@/lib/assets"
 import { ME, POINT_RULES, useStore, userPoints } from "@/lib/store"
-import { PROPOSE_MIN_POINTS } from "@/lib/seed"
+import { MIN_FUND_PLEDGE, PROPOSE_MIN_POINTS } from "@/lib/seed"
 import { MECHANISM_INFO, mechanismLabel } from "@/lib/matching"
 import { CATEGORIES } from "@/lib/types"
 import type { Category, Mechanism } from "@/lib/types"
@@ -70,7 +70,7 @@ export function ProposeFund() {
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px] lg:gap-10">
       <div>
         <h1 className="font-display text-3xl font-semibold md:text-[40px] tracking-tight">Propose a fund</h1>
-        <p className="mt-1 text-muted-foreground">Launches once it hits its funding and points goals.</p>
+        <p className="mt-1 text-muted-foreground">Launches once it raises at least {usd(MIN_FUND_PLEDGE)} in matching funds and hits its points goal.</p>
         <div className="mt-8 space-y-6">
           <Card className="space-y-5 p-6">
             <Field label="Fund name">
@@ -133,8 +133,8 @@ export function ProposeFund() {
           <Card className="p-6">
             <div className="text-sm font-semibold">Launch conditions</div>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <Field label="Pledge goal ($)">
-                <Input type="number" value={pledgeGoal} onChange={(e) => setPledgeGoal(Math.max(0, Number(e.target.value)))} />
+              <Field label="Pledge goal ($)" hint={pledgeGoal < MIN_FUND_PLEDGE ? <span className="text-destructive">Minimum {usd(MIN_FUND_PLEDGE)}</span> : `Minimum ${usd(MIN_FUND_PLEDGE)} in matching funds`}>
+                <Input type="number" min={MIN_FUND_PLEDGE} step={100} value={pledgeGoal} onChange={(e) => setPledgeGoal(Math.max(0, Number(e.target.value)))} />
               </Field>
               <Field label="Points goal">
                 <Input type="number" value={backingGoal} onChange={(e) => setBackingGoal(Math.max(0, Number(e.target.value)))} />
@@ -193,7 +193,7 @@ export function ProposeFund() {
               <Sparkles size={15} /> +{num(POINT_RULES.proposeFund + pledgeUsd * POINT_RULES.perFundBread)} points
             </div>
             <div className="mt-1 text-muted-foreground">for proposing and pledging. You'll be the fund's first curator.</div>
-            <Button size="lg" className="mt-4 w-full" disabled={!name.trim() || !tagline.trim() || initialPledge > state.me.art[pledgeAsset] + 1e-9} onClick={submit}>
+            <Button size="lg" className="mt-4 w-full" disabled={!name.trim() || !tagline.trim() || pledgeGoal < MIN_FUND_PLEDGE || initialPledge > state.me.art[pledgeAsset] + 1e-9} onClick={submit}>
               Propose fund
             </Button>
           </Card>

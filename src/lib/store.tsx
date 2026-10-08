@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 import { ASSETS, ASSET_IDS, DONATION_FEE, fmtUnits, money, setDisplayCurrency, toUsd } from "./assets"
 import type { Asset } from "./assets"
 import { campaignContributions, computeMatches, campaignMatches } from "./matching"
-import { PROJECT_DEPOSIT, PROPOSE_MIN_POINTS, STATE_VERSION, buildSeed, rng } from "./seed"
+import { MIN_FUND_PLEDGE, PROJECT_DEPOSIT, PROPOSE_MIN_POINTS, STATE_VERSION, buildSeed, rng } from "./seed"
 import type {
   Campaign,
   Category,
@@ -660,6 +660,8 @@ function useStoreValue() {
         return mutate((s) => {
           if (userPoints(s, ME) < PROPOSE_MIN_POINTS)
             return { ok: false, error: `You need ${PROPOSE_MIN_POINTS.toLocaleString()} points to propose a fund` }
+          if (f.pledgeGoal < MIN_FUND_PLEDGE)
+            return { ok: false, error: `The pledge goal must be at least ${money(MIN_FUND_PLEDGE)} of matching funds` }
           const pa = f.pledgeAsset
           if (f.initialPledge > s.me.art[pa] + 1e-9) return { ok: false, error: `Not enough ${ASSETS[pa].token} for that pledge` }
           const base = f.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "fund"
