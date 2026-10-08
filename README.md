@@ -2,6 +2,8 @@
 
 A desktop showcase of community-matched funding on the Bread Cooperative stack, built for the projects left stranded when Artizen shut down. Everything is simulated in the browser: no real money, no wallets, no blockchain.
 
+Live at https://tbsoc.github.io/pastry/ (also https://tbsoc.github.io/artizenal/). Both are deployed from the same code: this checkout pushes to `tbsoc/pastry` and `tbsoc/artizenal` together.
+
 ## Run it
 
 ```bash
