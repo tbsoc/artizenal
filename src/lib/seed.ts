@@ -14,7 +14,7 @@ import type {
   User,
 } from "./types"
 
-export const STATE_VERSION = 10
+export const STATE_VERSION = 11
 export const PROJECT_DEPOSIT = 25
 export const PROPOSE_MIN_POINTS = 1000
 /** A proposed fund must raise at least this much matching money (in dollars) before it can launch. */

@@ -53,7 +53,7 @@ function Checklist() {
     { done: state.donations.some((d) => d.from === ME && d.campaignId), label: "Back a project", href: "#/f/artizen-rescue" },
     { done: state.pointGifts.some((g) => g.userId === ME), label: "Give points", href: "#/allocate" },
     { done: state.users.some((u) => u.referredBy === ME), label: "Invite a friend", href: "#/points" },
-    { done: state.projects.some((p) => p.creatorId === ME), label: "Start a project", href: "#/new" },
+    { done: !!state.me.seenProject, label: "See your project", href: `#/p/${state.projects.find((p) => p.creatorId === ME)?.id ?? ""}` },
   ]
   const n = steps.filter((s) => s.done).length
   if (state.me.onboardingDismissed || n === steps.length) return null

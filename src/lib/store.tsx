@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
-import { ASSETS, ASSET_IDS, DONATION_FEE, fmtUnits, money, setDisplayCurrency, toUsd } from "./assets"
+import { ASSETS, ASSET_IDS, DONATION_FEE, fmtUnits, money, setDisplayCurrency, toUsd, zero } from "./assets"
 import type { Asset } from "./assets"
 import { campaignContributions, computeMatches, campaignMatches } from "./matching"
 import { MIN_FUND_PLEDGE, PROJECT_DEPOSIT, PROPOSE_MIN_POINTS, STATE_VERSION, buildSeed, rng } from "./seed"
@@ -107,6 +107,63 @@ export function wealthUnits(s: State, a: Asset) {
 /** Dollar value the Wealth Fund has received from the 10% donation fee. */
 export function feesUsd(s: State) {
   return ASSET_IDS.reduce((t, a) => t + toUsd(a, s.feeUnits[a]), 0)
+}
+
+/**
+ * A project's money from the creator's side. Anything that arrived before the
+ * current season started is unlocked; this season's donations and matching stay
+ * locked until the season closes.
+ */
+export function projectEarnings(s: State, pid: string) {
+  const p = getProject(s, pid)!
+  const received = zero()
+  const unlocked = zero()
+  const donors = new Set<string>()
+  for (const d of s.donations) {
+    if (d.projectId !== pid) continue
+    donors.add(d.from)
+    received[d.asset] += d.units
+    if (d.day < s.seasonStartDay) unlocked[d.asset] += d.units
+  }
+  let matchPaid = 0
+  let matchUnlocked = 0
+  let matchPending = 0
+  for (const c of s.campaigns) {
+    if (!c.projectIds.includes(pid)) continue
+    if (c.settled) {
+      const m = c.settled[pid] ?? 0
+      matchPaid += m
+      if (c.endDay < s.seasonStartDay) matchUnlocked += m
+    } else if (campaignStatus(c, s.day) === "live") {
+      const f = getFund(s, c.fundId)
+      if (f) matchPending += campaignMatches(c, f.mechanism, s.donations).matches[pid] ?? 0
+    }
+  }
+  const withdrawn = p.withdrawn ?? zero()
+  const available = zero()
+  for (const a of ASSET_IDS) available[a] = Math.max(0, unlocked[a] - withdrawn[a])
+  const availableMatch = Math.max(0, matchUnlocked - (p.matchWithdrawn ?? 0))
+  const sum = (r: Record<Asset, number>) => ASSET_IDS.reduce((t, a) => t + toUsd(a, r[a]), 0)
+  const receivedUsd = sum(received)
+  const withdrawnUsd = sum(withdrawn) + (p.matchWithdrawn ?? 0)
+  const availableUsd = sum(available) + availableMatch
+  return {
+    received,
+    receivedUsd,
+    donors: donors.size,
+    matchPaid,
+    matchPending,
+    available,
+    availableMatch,
+    availableUsd,
+    withdrawnUsd,
+    lockedUsd: Math.max(0, receivedUsd + matchPaid + matchPending - withdrawnUsd - availableUsd),
+    daysToUnlock: s.seasonLength - (s.day - s.seasonStartDay),
+  }
+}
+
+export function myProject(s: State) {
+  return s.projects.find((p) => p.creatorId === ME)
 }
 
 /** Direct gifts to a fund, newest first. */
@@ -287,6 +344,47 @@ function distributeYield(s: State) {
   s.seasonStartDay = s.day
 }
 
+/**
+ * Every new member starts with a sample project already in a live round, with
+ * a few donations from other members, so they can see the creator side.
+ */
+function createSampleProject(s: State, firstName: string) {
+  if (s.projects.some((p) => p.creatorId === ME)) return
+  const live = s.campaigns.filter((c) => campaignStatus(c, s.day) === "live")
+  const round = live.find((c) => c.id === "lifeboat") ?? live[0]
+  const id = "my-darkroom"
+  s.projects.unshift({
+    id,
+    title: `${firstName}'s Community Darkroom`,
+    tagline: "A shared darkroom where anyone can learn film photography.",
+    description:
+      "This is your sample project. It was live on Artizen when the platform shut down, and it's now in a matching round on Pastry.\n\nOther members have already started backing it. Watch donations and matching come in, then withdraw once the season ends.",
+    category: "Art",
+    creatorId: ME,
+    location: "Your city",
+    coverSeed: 211,
+    artizen: { season: "Artizen Season 6" },
+    deposit: { amount: PROJECT_DEPOSIT, status: "refunded" },
+    createdDay: Math.max(0, s.day - 10),
+    goal: 3000,
+    updates: [],
+    sample: true,
+  })
+  if (round && !round.projectIds.includes(id)) round.projectIds.push(id)
+  const r = rng(s.day * 97 + 13)
+  const others = s.users.filter((u) => u.id !== ME)
+  const today = s.day
+  const first = round ? Math.max(round.startDay, today - 9) : today - 9
+  for (let i = 0; i < 9; i++) {
+    const roll = r()
+    const asset: Asset = roll < 0.65 ? "USD" : roll < 0.85 ? "EUR" : "ETH"
+    const usdAmount = [10, 15, 20, 25, 40, 50, 75][Math.floor(r() * 7)]
+    s.day = first + Math.floor(r() * Math.max(1, today - first))
+    addDonation(s, others[Math.floor(r() * others.length)].id, id, asset, usdAmount / ASSETS[asset].usd, round?.id)
+  }
+  s.day = today
+}
+
 const ROUND_NAMES = ["Open Call", "Community Round", "Harvest Round", "Spotlight Round", "Neighbors Round"]
 
 /** Other curators open a fresh round whenever their fund has reserve but nothing running. */
@@ -458,6 +556,7 @@ function useStoreValue() {
           if (referrer) award(s, referrer.id, POINT_RULES.referral, "referral", `${clean} joined with their link`)
           award(s, ME, POINT_RULES.welcome, "welcome", "Welcome to Pastry")
           log(s, ME, referrer ? `joined via ${referrer.name}'s invite` : "joined Pastry")
+          createSampleProject(s, clean.split(" ")[0])
           return { ok: true }
         })
       },
@@ -720,6 +819,31 @@ function useStoreValue() {
           award(s, ME, POINT_RULES.curate, "curate", `Launched ${c.name}`)
           log(s, ME, `launched ${c.name} in ${f.name}`, `#/f/${fundId}`)
           return { ok: true, id }
+        })
+      },
+
+      withdrawProject(projectId: string): Result {
+        return mutate((s) => {
+          const p = getProject(s, projectId)
+          if (!p || p.creatorId !== ME) return { ok: false, error: "Only the creator can withdraw" }
+          const e = projectEarnings(s, projectId)
+          if (e.availableUsd < 0.01) return { ok: false, error: "Nothing is unlocked yet. Funds unlock when the season ends." }
+          p.withdrawn = p.withdrawn ?? zero()
+          for (const a of ASSET_IDS) {
+            s.me.art[a] += e.available[a]
+            p.withdrawn[a] += e.available[a]
+          }
+          // Matching is paid out in pasUSD.
+          s.me.art.USD += e.availableMatch
+          p.matchWithdrawn = (p.matchWithdrawn ?? 0) + e.availableMatch
+          log(s, ME, `withdrew ${money(e.availableUsd)} from ${p.title}`, `#/p/${p.id}`)
+          return { ok: true }
+        })
+      },
+
+      seeProject() {
+        mutate((s) => {
+          s.me.seenProject = true
         })
       },
 

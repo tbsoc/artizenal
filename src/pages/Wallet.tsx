@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { ArrowDown, Landmark, Sparkles, Sprout } from "lucide-react"
 import { Bread, Button, Card, Empty, Input, LinkButton, SectionTitle } from "@/components/ui"
-import { ME, POINT_RULES, getFund, getProject, getUser, myHoldingsUsd, useStore } from "@/lib/store"
+import { ME, POINT_RULES, getFund, getProject, getUser, myHoldingsUsd, myProject, useStore } from "@/lib/store"
+import { CreatorEarnings } from "@/components/Earnings"
 import { ASSETS, ASSET_IDS, fmtUnits, toUsd } from "@/lib/assets"
 import type { Asset } from "@/lib/assets"
 import { cn, num, usd } from "@/lib/utils"
@@ -12,6 +13,7 @@ export function Wallet() {
   const [toArt, setToArt] = useState(true)
   const [amount, setAmount] = useState(100)
   const me = getUser(state, ME)
+  const project = myProject(state)
   const A = ASSETS[asset]
   const max = toArt ? state.me.base[asset] : state.me.art[asset]
   const from = toArt ? A.base : A.token
@@ -89,6 +91,8 @@ export function Wallet() {
               <div className="mt-1 text-2xl font-semibold text-coop-ink tabular-nums">+{num((myHoldingsUsd(state) / 10) * POINT_RULES.holdingPer10PerDay)}/day</div>
             </div>
           </Card>
+
+          {project && <CreatorEarnings project={project} compact />}
 
           <Card className="flex flex-col items-start gap-4 bg-foreground p-6 text-background sm:flex-row sm:items-center">
             <Landmark size={28} className="shrink-0 text-wheat" />

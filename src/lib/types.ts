@@ -49,6 +49,9 @@ export interface Project {
   createdDay: number
   goal: number
   updates: { day: number; text: string }[]
+  withdrawn?: Record<Asset, number> // donation units already paid out to the creator
+  matchWithdrawn?: number // matching dollars already paid out
+  sample?: boolean // the project every new member starts with
 }
 
 export type Mechanism =
@@ -190,6 +193,7 @@ export interface Me {
   holdingCarry: number // fractional holding points not yet awarded
   onboardingDismissed?: boolean
   display?: Asset // currency totals are shown in
+  seenProject?: boolean
 }
 
 export interface State {

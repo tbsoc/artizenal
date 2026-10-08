@@ -2,6 +2,7 @@ import { useState } from "react"
 import { ArrowLeft, Globe, MapPin, ShieldCheck, Megaphone, Plus, Check, ExternalLink, Clock } from "lucide-react"
 import { ArtizenBadge, Avatar, Badge, Bread, Button, Card, Empty, MechanismBadge, Progress, Select, StatusPill, Tabs, Textarea } from "@/components/ui"
 import { Cover } from "@/components/Cover"
+import { CreatorEarnings } from "@/components/Earnings"
 import { DonateModal } from "@/components/modals"
 import {
   ME,
@@ -30,6 +31,7 @@ export function ProjectPage({ id }: { id: string }) {
   const stats = projectStats(state, project.id)
   const creator = getUser(state, project.creatorId)
   const mine = project.creatorId === ME
+  if (mine && !state.me.seenProject) queueMicrotask(actions.seeProject)
   const campaigns = projectCampaigns(state, project.id).sort((a, b) => b.endDay - a.endDay)
   const joinable = state.campaigns.filter(
     (c) => !c.projectIds.includes(project.id) && campaignStatus(c, state.day) !== "ended" && getFund(state, c.fundId)?.status === "active"
@@ -91,6 +93,12 @@ export function ProjectPage({ id }: { id: string }) {
               </a>
             )}
           </div>
+
+          {mine && (
+            <div className="mt-8">
+              <CreatorEarnings project={project} />
+            </div>
+          )}
 
           <div className="mt-8 border-b border-border pb-3">
             <Tabs
