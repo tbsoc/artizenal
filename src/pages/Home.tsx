@@ -177,7 +177,7 @@ export function Home() {
                 <a key={a.id} href={a.href} className="flex gap-3 px-4 py-3 text-sm hover:bg-muted/50">
                   {u ? <Avatar user={u} size={28} /> : <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-wheat/40"><Loaf size={15} /></div>}
                   <div className="min-w-0">
-                    <span className="font-semibold">{u ? (u.id === ME ? "You" : u.name) : "Pastry"}</span>{" "}
+                    <span className="font-semibold">{u ? (u.id === ME ? "You" : u.name) : a.userId === "anon" ? "Someone" : "Pastry"}</span>{" "}
                     <span className="text-muted-foreground">{a.text}</span>
                     <div className="text-xs text-muted-foreground/70">{dayLabel(a.day, state.day)}</div>
                   </div>

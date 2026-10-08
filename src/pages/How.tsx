@@ -18,6 +18,10 @@ const QA: { q: string; a: string }[] = [
     a: "The Pastry Wealth Fund: everything behind the pas tokens, plus permanent endowments. Its savings and staking yield is split between funds each season. Principal is never spent.",
   },
   {
+    q: "Is there a fee?",
+    a: "10% of every donation goes into the Pastry Wealth Fund for good. It keeps earning yield, so every gift grows the matching for everyone.",
+  },
+  {
     q: "What does endowing mean?",
     a: `Giving USDC, EURC or ETH to the Wealth Fund for good. It earns yield for matching forever, and you get ${POINT_RULES.perEndowedUsd} points per $1 to steer it.`,
   },

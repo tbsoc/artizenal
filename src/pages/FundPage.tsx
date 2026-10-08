@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { confettiFrom } from "@/lib/confetti"
-import { ArrowLeft, HandCoins, Rocket, Settings2, ShoppingBasket, Sparkles, Vote, Plus } from "lucide-react"
+import { ArrowLeft, ExternalLink, HandCoins, Megaphone, Rocket, Settings2, ShoppingBasket, Sparkles, Vote, Plus, UserRound } from "lucide-react"
 import {
   Avatar,
   Badge,
@@ -29,6 +29,7 @@ import {
   pointsBalance,
   seasonRatios,
   fundPledged,
+  fundSupporters,
   getFund,
   getProject,
   getUser,
@@ -36,7 +37,8 @@ import {
 } from "@/lib/store"
 import { MECHANISM_INFO, campaignContributions, campaignMatches, mechanismLabel } from "@/lib/matching"
 import type { Campaign, Fund } from "@/lib/types"
-import { cn, num, usd } from "@/lib/utils"
+import { cn, dayLabel, num, usd } from "@/lib/utils"
+import { ASSETS, fmtUnits } from "@/lib/assets"
 
 function GivePoints({ fund }: { fund: Fund }) {
   const { state, actions, toast } = useStore()
@@ -279,6 +281,109 @@ function CampaignPanel({ campaign, fund }: { campaign: Campaign; fund: Fund }) {
   )
 }
 
+/** Everyone who gave directly to the fund. Named givers can leave a note; the biggest are shown as sponsors. */
+function Supporters({ fund, onGive }: { fund: Fund; onGive: () => void }) {
+  const { state } = useStore()
+  const gifts = fundSupporters(state, fund.id)
+  const total = gifts.reduce((t, g) => t + g.amount, 0)
+
+  // Sponsors: named givers ranked by total given, with their latest note and link.
+  const byUser = new Map<string, { total: number; message?: string; link?: string; day: number }>()
+  for (const g of [...gifts].reverse()) {
+    if (g.anonymous) continue
+    const e = byUser.get(g.from) ?? { total: 0, day: 0 }
+    e.total += g.amount
+    if (g.message) e.message = g.message
+    if (g.link) e.link = g.link
+    e.day = g.day
+    byUser.set(g.from, e)
+  }
+  const sponsors = [...byUser.entries()].sort((a, b) => b[1].total - a[1].total).slice(0, 3)
+  const anonTotal = gifts.filter((g) => g.anonymous).reduce((t, g) => t + g.amount, 0)
+
+  return (
+    <section className="mt-12">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h2 className="font-display text-[28px] font-semibold">Supporters</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {gifts.length ? `${usd(total)} given directly by ${new Set(gifts.map((g) => g.from)).size} people` : "No direct gifts yet."}
+            {anonTotal > 0 && `, including ${usd(anonTotal)} anonymously`}
+          </p>
+        </div>
+        <Button variant="outline" onClick={onGive}>
+          <Megaphone size={15} /> Give and leave a note
+        </Button>
+      </div>
+
+      {sponsors.length > 0 && (
+        <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+          {sponsors.map(([uid, e], i) => {
+            const u = getUser(state, uid)
+            return (
+              <Card key={uid} className={cn("flex flex-col p-5", i === 0 && "border-crust/40 bg-wheat/10")}>
+                <div className="flex items-center gap-3">
+                  <Avatar user={u} size={36} />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-semibold">{uid === ME ? "You" : u?.name}</div>
+                    <div className="text-xs text-muted-foreground">{usd(e.total)} given</div>
+                  </div>
+                  <Badge tone={i === 0 ? "primary" : "muted"}>Sponsor</Badge>
+                </div>
+                {e.message && <p className="mt-3 flex-1 text-sm leading-relaxed text-foreground/85">“{e.message}”</p>}
+                {e.link && (
+                  <a
+                    href={e.link}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="mt-3 inline-flex items-center gap-1 truncate text-sm font-semibold text-crust hover:underline"
+                  >
+                    {e.link.replace(/^https?:\/\//, "").replace(/\/$/, "")} <ExternalLink size={13} />
+                  </a>
+                )}
+              </Card>
+            )
+          })}
+        </div>
+      )}
+
+      {gifts.length > 0 && (
+        <Card className="divide-y divide-border">
+          {gifts.slice(0, 12).map((g) => {
+            const u = g.anonymous ? undefined : getUser(state, g.from)
+            return (
+              <div key={g.id} className="flex gap-3 px-5 py-3 text-sm">
+                {g.anonymous ? (
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <UserRound size={16} />
+                  </div>
+                ) : (
+                  <Avatar user={u} size={32} />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                    <span className="font-semibold">{g.anonymous ? "Anonymous" : g.from === ME ? "You" : u?.name}</span>
+                    <span className="tabular-nums">
+                      {fmtUnits(g.asset, g.units)} {ASSETS[g.asset].token}
+                      <span className="ml-2 text-xs text-muted-foreground">{dayLabel(g.day, state.day)}</span>
+                    </span>
+                  </div>
+                  {g.message && <p className="mt-0.5 text-muted-foreground">{g.message}</p>}
+                  {g.link && (
+                    <a href={g.link} target="_blank" rel="noopener noreferrer nofollow" className="mt-0.5 inline-flex items-center gap-1 text-xs font-semibold text-crust hover:underline">
+                      {g.link.replace(/^https?:\/\//, "").replace(/\/$/, "")} <ExternalLink size={11} />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </Card>
+      )}
+    </section>
+  )
+}
+
 export function FundPage({ id, query }: { id: string; query: URLSearchParams }) {
   const { state, actions } = useStore()
   const fund = getFund(state, id)
@@ -451,6 +556,8 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
           )}
         </aside>
       </div>
+
+      <Supporters fund={fund} onGive={() => setGiveOpen(true)} />
 
       <FundDonateModal key={String(giveOpen)} fund={fund} open={giveOpen} onClose={() => setGiveOpen(false)} />
       {startOpen && <StartCampaignModal fund={fund} open={startOpen} onClose={() => setStartOpen(false)} />}

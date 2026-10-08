@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react"
 import { ArrowRight, X, PartyPopper, ShoppingBasket, Trash2, Info, Sparkles, ScrollText, Scale, ShieldCheck } from "lucide-react"
-import { Bread, BreadLogo, Button, Field, Input, Loaf, Modal, Pts, Select, MechanismBadge } from "./ui"
+import { Bread, BreadLogo, Button, Field, Input, Loaf, Modal, Pts, Select, MechanismBadge, Textarea } from "./ui"
 import { Cover } from "./Cover"
 import { POINT_RULES, campaignStatus, getFund, getProject, ME, useStore } from "@/lib/store"
 import { basketMatch, marginalMatch, MECHANISM_INFO } from "@/lib/matching"
 import type { Fund, Project } from "@/lib/types"
 import { cn, num, usd } from "@/lib/utils"
 import { isSubscribed, subscribe } from "@/lib/signup"
-import { ASSETS, ASSET_IDS, fmtUnits, toUsd } from "@/lib/assets"
+import { ASSETS, ASSET_IDS, DONATION_FEE, fmtUnits, toUsd } from "@/lib/assets"
 import type { Asset } from "@/lib/assets"
 
 /** Inline helper shown when the user doesn't hold enough of a pas token. */
@@ -70,7 +70,7 @@ export function DonateModal({
   const usdValue = toUsd(asset, units)
   const campaign = liveCampaigns.find((c) => c.id === campaignId)
   const fund = campaign ? getFund(state, campaign.fundId) : undefined
-  const match = campaign && fund && usdValue > 0 ? marginalMatch(campaign, fund.mechanism, state.donations, project.id, ME, usdValue) : 0
+  const match = campaign && fund && usdValue > 0 ? marginalMatch(campaign, fund.mechanism, state.donations, project.id, ME, usdValue * (1 - DONATION_FEE)) : 0
   const points = Math.round(usdValue * POINT_RULES.perBread)
   const balance = state.me.art[asset]
 
@@ -163,6 +163,17 @@ export function DonateModal({
               ≈ {usd(usdValue)} · Balance {fmtUnits(asset, balance)} {A.token}
             </div>
           </div>
+          <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-2.5 text-xs text-muted-foreground">
+            <span>
+              The project gets <b className="text-foreground">{fmtUnits(asset, units * (1 - DONATION_FEE))} {A.token}</b>
+            </span>
+            <span>
+              {Math.round(DONATION_FEE * 100)}% ({fmtUnits(asset, units * DONATION_FEE)}) to the{" "}
+              <a href="#/wealth" className="font-semibold text-crust hover:underline">
+                Wealth Fund
+              </a>
+            </span>
+          </div>
 
           {liveCampaigns.length > 0 ? (
             <Field label="Round">
@@ -245,6 +256,9 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
   const [asset, setAsset] = useState<Asset>("USD")
   const [units, setUnits] = useState(50)
   const [target, setTarget] = useState(live[0]?.id ?? "")
+  const [message, setMessage] = useState("")
+  const [link, setLink] = useState("")
+  const [anonymous, setAnonymous] = useState(false)
   const proposed = fund.status === "proposed"
   const A = ASSETS[asset]
   const value = toUsd(asset, units)
@@ -256,7 +270,7 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
   }
 
   const submit = () => {
-    const r = actions.donateFund(fund.id, asset, units, proposed ? undefined : target || undefined)
+    const r = actions.donateFund(fund.id, asset, units, proposed ? undefined : target || undefined, anonymous ? { anonymous } : { message, link })
     if (!r.ok) return toast(r.error, "err")
     toast(`+${num(points)} points. Thanks!`)
     onClose()
@@ -290,6 +304,17 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
             ≈ {usd(value)} · Balance {fmtUnits(asset, state.me.art[asset])} {A.token}
           </div>
         </div>
+        <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-2.5 text-xs text-muted-foreground">
+            <span>
+              The fund gets <b className="text-foreground">{fmtUnits(asset, units * (1 - DONATION_FEE))} {A.token}</b>
+            </span>
+            <span>
+              {Math.round(DONATION_FEE * 100)}% ({fmtUnits(asset, units * DONATION_FEE)}) to the{" "}
+              <a href="#/wealth" className="font-semibold text-crust hover:underline">
+                Wealth Fund
+              </a>
+            </span>
+          </div>
         {!proposed && (
           <Field label="To">
             <Select value={target} onChange={(e) => setTarget(e.target.value)}>
@@ -302,6 +327,27 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
             </Select>
           </Field>
         )}
+        <div className="space-y-3 rounded-2xl border border-border p-4">
+          <div className="text-sm font-semibold">Public note (optional)</div>
+          {!anonymous && (
+            <>
+              <Textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value.slice(0, 280))}
+                placeholder="Say why you're giving, or tell people about your project or product"
+                className="min-h-20"
+              />
+              <Input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link, e.g. yourproduct.com" />
+            </>
+          )}
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} className="h-4 w-4 accent-[var(--primary)]" />
+            Give anonymously
+          </label>
+          <div className="text-xs text-muted-foreground">
+            {anonymous ? "Your name won't be shown on the fund page." : "Shown with your name in the fund's supporters. Top supporters are listed as sponsors."}
+          </div>
+        </div>
         {units > state.me.art[asset] && <QuickBake need={units} asset={asset} />}
         <div className="flex items-center justify-between border-t border-border pt-4">
           <Pts value={points} className="text-sm font-semibold text-coop-ink" />
@@ -329,7 +375,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
   const groupMatches = groups.map(([cid, items]) => {
     const c = state.campaigns.find((x) => x.id === cid)!
     const f = getFund(state, c.fundId)!
-    const r = basketMatch(c, f.mechanism, state.donations, ME, items.map((i) => ({ projectId: i.projectId, amount: toUsd(asset, i.amount) })))
+    const r = basketMatch(c, f.mechanism, state.donations, ME, items.map((i) => ({ projectId: i.projectId, amount: toUsd(asset, i.amount) * (1 - DONATION_FEE) })))
     totalMatch += r.total
     return r
   })
@@ -406,6 +452,12 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
               <span className="text-muted-foreground">You give</span>
               <span className="font-semibold tabular-nums">
                 {fmtUnits(asset, total)} {A.token} <span className="font-normal text-muted-foreground">≈ {usd(totalUsd)}</span>
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">To the Wealth Fund ({Math.round(DONATION_FEE * 100)}%)</span>
+              <span className="tabular-nums">
+                {fmtUnits(asset, total * DONATION_FEE)} {A.token}
               </span>
             </div>
             <div className="flex justify-between text-sm">

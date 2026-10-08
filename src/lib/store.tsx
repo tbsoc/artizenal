@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
-import { ASSETS, ASSET_IDS, fmtUnits, money, setDisplayCurrency, toUsd } from "./assets"
+import { ASSETS, ASSET_IDS, DONATION_FEE, fmtUnits, money, setDisplayCurrency, toUsd } from "./assets"
 import type { Asset } from "./assets"
 import { campaignContributions, computeMatches, campaignMatches } from "./matching"
 import { PROJECT_DEPOSIT, PROPOSE_MIN_POINTS, STATE_VERSION, buildSeed, rng } from "./seed"
@@ -101,7 +101,17 @@ export function fundPledged(s: State, fundId: string) {
 
 /** Units of an asset in the Wealth Fund: pas tokens people hold plus permanent endowments. */
 export function wealthUnits(s: State, a: Asset) {
-  return s.supply[a] + s.me.art[a] + s.endowed[a]
+  return s.supply[a] + s.me.art[a] + s.endowed[a] + s.feeUnits[a]
+}
+
+/** Dollar value the Wealth Fund has received from the 10% donation fee. */
+export function feesUsd(s: State) {
+  return ASSET_IDS.reduce((t, a) => t + toUsd(a, s.feeUnits[a]), 0)
+}
+
+/** Direct gifts to a fund, newest first. */
+export function fundSupporters(s: State, fundId: string) {
+  return s.fundDonations.filter((d) => d.fundId === fundId).sort((a, b) => b.day - a.day)
 }
 
 /** Total dollar value of the Pastry Wealth Fund. */
@@ -201,13 +211,17 @@ function addDonation(
 ) {
   const project = getProject(s, projectId)
   if (!project) return
-  const amount = toUsd(asset, units)
+  // 10% of every donation goes into the Wealth Fund; the project gets the rest.
+  const fee = units * DONATION_FEE
+  const net = units - fee
+  s.feeUnits[asset] += fee
+  const amount = toUsd(asset, net)
   const priorDonors = new Set(s.donations.filter((d) => d.projectId === projectId).map((d) => d.from))
-  s.donations.push({ id: uid("d"), from, projectId, campaignId, amount, asset, units, day: s.day })
+  s.donations.push({ id: uid("d"), from, projectId, campaignId, amount, asset, units: net, fee, day: s.day })
   award(
     s,
     from,
-    amount * POINT_RULES.perBread,
+    toUsd(asset, units) * POINT_RULES.perBread,
     "donate-bread",
     `Donated to ${project.title}`
   )
@@ -342,6 +356,25 @@ function load(): State {
     /* storage unavailable; fall back to seed */
   }
   return buildSeed()
+}
+
+export interface GiftNote {
+  message?: string
+  link?: string
+  anonymous?: boolean
+}
+
+/** Keep only http(s) links, so a sponsor link can't run script. */
+function cleanLink(link?: string) {
+  const v = (link ?? "").trim()
+  if (!v) return undefined
+  const withScheme = /^https?:\/\//i.test(v) ? v : `https://${v}`
+  try {
+    const u = new URL(withScheme)
+    return u.protocol === "http:" || u.protocol === "https:" ? u.toString() : undefined
+  } catch {
+    return undefined
+  }
 }
 
 export interface NewProject {
@@ -480,23 +513,38 @@ function useStoreValue() {
         })
       },
 
-      donateFund(fundId: string, asset: Asset, units: number, campaignId?: string): Result {
+      donateFund(fundId: string, asset: Asset, units: number, campaignId?: string, note: GiftNote = {}): Result {
         return mutate((s) => {
           const A = ASSETS[asset]
           if (units <= 0) return { ok: false, error: "Enter an amount" }
           if (units > s.me.art[asset] + 1e-9) return { ok: false, error: `Not enough ${A.token}. Convert some ${A.base} first.` }
           const f = getFund(s, fundId)!
-          const amount = toUsd(asset, units)
+          const fee = units * DONATION_FEE
+          s.feeUnits[asset] += fee
+          const amount = toUsd(asset, units - fee)
           s.me.art[asset] -= units
-          s.fundDonations.push({ id: uid("fd"), from: ME, fundId, campaignId, amount, asset, units, day: s.day })
+          s.fundDonations.push({
+            id: uid("fd"),
+            from: ME,
+            fundId,
+            campaignId,
+            amount,
+            asset,
+            units: units - fee,
+            fee,
+            message: note.message?.trim().slice(0, 280) || undefined,
+            link: cleanLink(note.link),
+            anonymous: note.anonymous || undefined,
+            day: s.day,
+          })
           if (f.status === "active") {
             const c = campaignId ? s.campaigns.find((x) => x.id === campaignId) : undefined
             if (c) c.matchingPool += amount
             else f.reserve += amount
           }
-          award(s, ME, amount * POINT_RULES.perFundBread, "donate-fund", `Gave to ${f.name}`)
+          award(s, ME, toUsd(asset, units) * POINT_RULES.perFundBread, "donate-fund", `Gave to ${f.name}`)
           const what = `${fmtUnits(asset, units)} ${A.token}`
-          log(s, ME, f.status === "proposed" ? `pledged ${what} to launch ${f.name}` : `added ${what} to ${f.name}`, `#/f/${f.id}`)
+          log(s, note.anonymous ? "anon" : ME, f.status === "proposed" ? `pledged ${what} to launch ${f.name}` : `added ${what} to ${f.name}`, `#/f/${f.id}`)
           checkLaunches(s)
           return { ok: true }
         })
@@ -639,10 +687,11 @@ function useStoreValue() {
           award(s, ME, POINT_RULES.proposeFund, "propose-fund", `Proposed ${f.name}`)
           log(s, ME, `proposed the fund ${f.name}`, `#/f/${id}`)
           if (f.initialPledge > 0) {
-            const usdValue = toUsd(pa, f.initialPledge)
+            const fee = f.initialPledge * DONATION_FEE
+            s.feeUnits[pa] += fee
             s.me.art[pa] -= f.initialPledge
-            s.fundDonations.push({ id: uid("fd"), from: ME, fundId: id, amount: usdValue, asset: pa, units: f.initialPledge, day: s.day })
-            award(s, ME, usdValue * POINT_RULES.perFundBread, "donate-fund", `Pledged to ${f.name}`)
+            s.fundDonations.push({ id: uid("fd"), from: ME, fundId: id, amount: toUsd(pa, f.initialPledge - fee), asset: pa, units: f.initialPledge - fee, fee, day: s.day })
+            award(s, ME, toUsd(pa, f.initialPledge) * POINT_RULES.perFundBread, "donate-fund", `Pledged to ${f.name}`)
           }
           checkLaunches(s)
           return { ok: true, id }

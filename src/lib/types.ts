@@ -95,7 +95,8 @@ export interface Donation {
   campaignId?: string
   amount: number // dollar value; matching and totals use this
   asset: Asset
-  units: number // amount in the pas token actually given
+  units: number // amount the project received, after the Wealth Fund fee
+  fee?: number // units sent to the Wealth Fund
   day: number
 }
 
@@ -114,9 +115,13 @@ export interface FundDonation {
   from: string
   fundId: string
   campaignId?: string // undefined = fund reserve / launch pledge
-  amount: number // dollar value
+  amount: number // dollar value the fund received, after the Wealth Fund fee
   asset: Asset
   units: number
+  fee?: number
+  message?: string
+  link?: string
+  anonymous?: boolean
   day: number
 }
 
@@ -195,6 +200,7 @@ export interface State {
   seasonLength: number
   supply: Record<Asset, number> // pas tokens held by other members (redeemable)
   endowed: Record<Asset, number> // permanent principal from everyone, in units
+  feeUnits: Record<Asset, number> // permanent principal from the 10% donation fee
   yieldPool: number
   yieldLifetime: number
   me: Me

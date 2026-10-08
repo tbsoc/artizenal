@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Landmark, Lock, Sparkles } from "lucide-react"
 import { Avatar, Button, Card, Input, LiveYield, Pts, SectionTitle, Stat } from "@/components/ui"
-import { ME, POINT_RULES, blendedApy, dailyYield, getUser, totalSupply, useStore, wealthUnits } from "@/lib/store"
+import { ME, POINT_RULES, blendedApy, dailyYield, feesUsd, getUser, totalSupply, useStore, wealthUnits } from "@/lib/store"
 import { ASSETS, ASSET_IDS, fmtUnits, toUsd } from "@/lib/assets"
 import type { Asset } from "@/lib/assets"
 import { cn, num, usd } from "@/lib/utils"
@@ -49,7 +49,9 @@ export function Wealth() {
         <div>
           <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Total value</div>
           <div className="mt-2 font-display text-4xl font-semibold md:text-5xl">{usd(totalSupply(state))}</div>
-          <div className="mt-1 text-sm text-muted-foreground">{usd(endowedUsd)} of it is endowed permanently</div>
+          <div className="mt-1 text-sm text-muted-foreground">
+            {usd(endowedUsd + feesUsd(state))} is permanent: {usd(endowedUsd)} endowed, {usd(feesUsd(state))} from the 10% donation fee
+          </div>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:border-l lg:border-border lg:pl-10">
           <div>
@@ -68,7 +70,7 @@ export function Wealth() {
               <tr>
                 <th className="px-5 py-2.5 font-medium">Asset</th>
                 <th className="px-3 py-2.5 text-right font-medium">Held (redeemable)</th>
-                <th className="px-3 py-2.5 text-right font-medium">Endowed (permanent)</th>
+                <th className="px-3 py-2.5 text-right font-medium">Permanent (endowed + fees)</th>
                 <th className="px-3 py-2.5 text-right font-medium">APY</th>
                 <th className="px-5 py-2.5 text-right font-medium">Yield per day</th>
               </tr>
@@ -76,7 +78,7 @@ export function Wealth() {
             <tbody>
               {ASSET_IDS.map((a) => {
                 const X = ASSETS[a]
-                const held = wealthUnits(state, a) - state.endowed[a]
+                const held = wealthUnits(state, a) - state.endowed[a] - state.feeUnits[a]
                 return (
                   <tr key={a} className="border-t border-border">
                     <td className="px-5 py-3">
@@ -88,8 +90,8 @@ export function Wealth() {
                       <div className="text-xs text-muted-foreground">{usd(toUsd(a, held))}</div>
                     </td>
                     <td className="px-3 py-3 text-right tabular-nums">
-                      <div className="font-semibold">{fmtUnits(a, state.endowed[a])}</div>
-                      <div className="text-xs text-muted-foreground">{usd(toUsd(a, state.endowed[a]))}</div>
+                      <div className="font-semibold">{fmtUnits(a, state.endowed[a] + state.feeUnits[a])}</div>
+                      <div className="text-xs text-muted-foreground">{usd(toUsd(a, state.endowed[a] + state.feeUnits[a]))}</div>
                     </td>
                     <td className="px-3 py-3 text-right tabular-nums">{(X.apy * 100).toFixed(1)}%</td>
                     <td className="px-5 py-3 text-right font-semibold text-community tabular-nums">{usd((toUsd(a, wealthUnits(state, a)) * X.apy) / 365)}</td>

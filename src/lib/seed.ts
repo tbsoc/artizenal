@@ -14,7 +14,7 @@ import type {
   User,
 } from "./types"
 
-export const STATE_VERSION = 9
+export const STATE_VERSION = 10
 export const PROJECT_DEPOSIT = 25
 export const PROPOSE_MIN_POINTS = 1000
 export const START_USDC = 750
@@ -576,7 +576,14 @@ export function buildSeed(): State {
     { id: "fd3", from: "ines", fundId: "food-sovereignty", amount: 150, asset: "USD" as const, units: 150, day: 36 },
     { id: "fd4", from: "lena", fundId: "disability-design", amount: 300, asset: "USD" as const, units: 300, day: 38 },
     { id: "fd5", from: "noor", fundId: "disability-design", amount: 400, asset: "USD" as const, units: 400, day: 39 },
-    { id: "fd6", from: "oli", fundId: "artizen-rescue", campaignId: "lifeboat", amount: 1000, asset: "USD" as const, units: 1000, day: 31 },
+    { id: "fd6", from: "oli", fundId: "artizen-rescue", campaignId: "lifeboat", amount: 1000, asset: "USD" as const, units: 1000, day: 31, message: "Artizen projects deserve to finish what they started." },
+    { id: "fd7", from: "kofi", fundId: "climate-commons", amount: 400, asset: "USD" as const, units: 400, day: 36, message: "Our repair crates are free to borrow for any group in this fund's rounds." },
+    { id: "fd8", from: "m3", fundId: "climate-commons", amount: 750, asset: "USD" as const, units: 750, day: 37, anonymous: true },
+    { id: "fd9", from: "june", fundId: "community-science", amount: 300, asset: "USD" as const, units: 300, day: 33, message: "Open hardware forever. Sensor build nights every Saturday at our Seoul makerspace." },
+    { id: "fd10", from: "bea", fundId: "music-no-labels", amount: 500, asset: "USD" as const, units: 500, day: 32, message: "Run by musicians, for musicians." },
+    { id: "fd11", from: "m7", fundId: "artizen-rescue", amount: 2000, asset: "USD" as const, units: 2000, day: 39, anonymous: true },
+    { id: "fd12", from: "maya", fundId: "small-press", amount: 250, asset: "USD" as const, units: 250, day: 38, message: "Riso Commons prints at cost for every project in the Spring Zine Drive." },
+    { id: "fd13", from: "theo", fundId: "community-science", amount: 0.1 * ASSETS.ETH.usd, asset: "ETH" as const, units: 0.1, day: 40, message: "Tidepool Atlas volunteers say thanks." },
   ]
 
   // Pas tokens other members hold, and permanent endowments, in units of each asset.
@@ -601,6 +608,7 @@ export function buildSeed(): State {
     seasonLength: 30,
     supply,
     endowed,
+    feeUnits: zero(),
     yieldPool: perDay * (SEED_DAY - 30),
     yieldLifetime: perDay * SEED_DAY,
     me: {
