@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { ArrowRight, X, PartyPopper, ShoppingBasket, Trash2, Info, Sparkles, ScrollText, Scale, ShieldCheck } from "lucide-react"
-import { Bread, BreadLogo, Button, Field, Input, Loaf, Modal, Pts, Select, MechanismBadge, Textarea } from "./ui"
+import { Bread, BreadLogo, Button, CommunityLinks, Field, Input, Loaf, Modal, Pts, Select, MechanismBadge, Textarea } from "./ui"
 import { Cover } from "./Cover"
 import { POINT_RULES, campaignStatus, getFund, getProject, ME, useStore } from "@/lib/store"
 import { basketMatch, marginalMatch, MECHANISM_INFO } from "@/lib/matching"
@@ -542,6 +542,13 @@ export function AboutContent() {
             </div>
           </div>
         ))}
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-muted px-4 py-3">
+        <div className="text-sm">
+          <div className="font-semibold">Join the Bread Cooperative community</div>
+          <div className="text-xs text-muted-foreground">Questions, ideas, or want to build this with us?</div>
+        </div>
+        <CommunityLinks size="sm" />
       </div>
       <p className="rounded-xl border border-dashed border-border px-4 py-3 text-xs text-muted-foreground">
         A showcase: everything is simulated in your browser. Projects and people are examples.

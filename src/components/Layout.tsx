@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import type { ReactNode } from "react"
 import { ShoppingBasket, FastForward, RotateCcw, CalendarClock, ChevronDown, CheckCircle2, AlertCircle, Info, Menu, X } from "lucide-react"
-import { Avatar, BreadLogo, Button, Pts } from "./ui"
+import { Avatar, BreadLogo, Button, CommunityLinks, Pts } from "./ui"
 import { AboutModal, CartDrawer, Onboarding } from "./modals"
 import { ME, dailyYield, getUser, myHoldingsUsd, pointsBalance, useStore } from "@/lib/store"
 import { ASSET_IDS } from "@/lib/assets"
@@ -241,11 +241,14 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
       <main className="mx-auto max-w-[1280px] px-4 pt-6 pb-24 md:px-8 md:pt-8">{children}</main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 py-8 text-xs text-muted-foreground md:px-8">
+        <div className="mx-auto flex max-w-[1280px] flex-col items-start gap-4 px-4 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between md:px-8">
           <div className="flex items-center gap-2">
             <BreadLogo size={16} /> A Bread Cooperative showcase. Everything is simulated.
           </div>
-          
+          <div className="flex items-center gap-3">
+            <span>Join the community</span>
+            <CommunityLinks size="sm" />
+          </div>
         </div>
       </footer>
 

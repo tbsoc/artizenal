@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { ReactNode } from "react"
-import { X, Sparkles, History } from "lucide-react"
+import { X, Sparkles, History, Send, MessagesSquare } from "lucide-react"
 import { cn, initials, num } from "@/lib/utils"
 import { money } from "@/lib/assets"
 import type { Mechanism, User } from "@/lib/types"
@@ -411,3 +411,31 @@ export function LiveYield({ base, perDay, className }: { base: number; perDay: n
   return <Bread value={value} digits={2} className={cn("font-sans tracking-tight [font-variant-numeric:tabular-nums]", className)} />
 }
 
+
+export const COMMUNITY_LINKS = [
+  { label: "Telegram", href: "https://t.me/breadcoopfriends" },
+  { label: "Discord", href: "https://discord.gg/9Qg46MBR5k" },
+]
+
+/** Links to the Bread Cooperative's Telegram group and Discord server. */
+export function CommunityLinks({ className, size = "md" }: { className?: string; size?: "sm" | "md" }) {
+  return (
+    <div className={cn("flex flex-wrap items-center gap-2", className)}>
+      {COMMUNITY_LINKS.map((l) => (
+        <a
+          key={l.label}
+          href={l.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full border border-border bg-card font-semibold text-foreground transition hover:bg-muted",
+            size === "sm" ? "h-8 px-3 text-xs" : "h-9 px-4 text-sm"
+          )}
+        >
+          {l.label === "Telegram" ? <Send size={size === "sm" ? 13 : 15} /> : <MessagesSquare size={size === "sm" ? 13 : 15} />}
+          {l.label}
+        </a>
+      ))}
+    </div>
+  )
+}
