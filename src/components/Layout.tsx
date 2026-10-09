@@ -137,12 +137,13 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
   }, [])
   const iconBtn = "relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card hover:bg-muted cursor-pointer"
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-md">
-        <div className="flex h-8 items-center justify-center gap-2 bg-foreground px-4 text-center text-xs font-medium text-background">
-          <AlertCircle size={13} className="shrink-0 text-wheat" />
-          <span className="truncate">This is a demo. All data is simulated and not real.</span>
-        </div>
+    <div className="min-h-screen pt-8">
+      {/* Sits above everything, including the welcome pop-up, so it's always readable. */}
+      <div className="fixed inset-x-0 top-0 z-[70] flex h-8 items-center justify-center gap-2 bg-foreground px-4 text-center text-xs font-medium text-background">
+        <AlertCircle size={13} className="shrink-0 text-wheat" />
+        <span className="truncate">This is a demo. All data is simulated and not real.</span>
+      </div>
+      <header className="sticky top-8 z-30 border-b border-border bg-background/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-3 px-4 md:px-8 xl:gap-5 2xl:gap-8">
           <a href="#/" className="flex items-center gap-2">
             <BreadLogo size={28} />

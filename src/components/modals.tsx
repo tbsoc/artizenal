@@ -394,7 +394,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-40 flex justify-end bg-foreground/30 animate-in" onMouseDown={onClose}>
+    <div className="fixed inset-x-0 top-8 bottom-0 z-40 flex justify-end bg-foreground/30 animate-in" onMouseDown={onClose}>
       <div className="slide-in flex h-full w-full flex-col sm:w-[460px] bg-card shadow-2xl" onMouseDown={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
           <div className="font-display text-2xl font-semibold">Your basket</div>
@@ -593,7 +593,7 @@ export function Onboarding() {
   if (state.me.onboarded) return null
   if (step === "about")
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-6 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/40 px-4 pt-12 pb-6 backdrop-blur-sm sm:items-center sm:p-6 sm:pt-14">
         <div className="pop-in w-full max-w-[600px] rounded-3xl bg-card p-8 shadow-2xl">
           <AboutContent />
           <div className="mt-6 flex justify-end">
@@ -605,7 +605,7 @@ export function Onboarding() {
       </div>
     )
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-6 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/40 px-4 pt-12 pb-6 backdrop-blur-sm sm:items-center sm:p-6 sm:pt-14">
       <form
         className="pop-in w-full max-w-[440px] space-y-5 rounded-3xl bg-card p-8 shadow-2xl"
         onSubmit={async (e) => {
