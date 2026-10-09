@@ -47,7 +47,7 @@ function SimClock() {
       {open && (
         <>
           <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="pop-in fixed inset-x-3 top-[4.5rem] z-40 rounded-2xl sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-80 border border-border bg-card p-4 shadow-xl">
+          <div className="pop-in fixed inset-x-3 top-[6.5rem] z-40 rounded-2xl sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-80 border border-border bg-card p-4 shadow-xl">
             <div className="text-xs font-semibold tracking-wide text-coop-ink uppercase">Demo time machine</div>
             <p className="mt-1 text-xs text-muted-foreground">
               Skip ahead to see yield build up and rounds pay out.
@@ -139,6 +139,10 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-md">
+        <div className="flex h-8 items-center justify-center gap-2 bg-foreground px-4 text-center text-xs font-medium text-background">
+          <AlertCircle size={13} className="shrink-0 text-wheat" />
+          <span className="truncate">This is a demo. All data is simulated and not real.</span>
+        </div>
         <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-3 px-4 md:px-8 xl:gap-5 2xl:gap-8">
           <a href="#/" className="flex items-center gap-2">
             <BreadLogo size={28} />
@@ -195,8 +199,8 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
 
         {menuOpen && (
           <>
-            <div className="fixed inset-0 top-16 z-30 bg-foreground/20 xl:hidden" onClick={() => setMenuOpen(false)} />
-            <div className="pop-in absolute inset-x-0 top-16 z-40 border-b border-border bg-background shadow-lg xl:hidden">
+            <div className="fixed inset-0 z-30 bg-foreground/20 xl:hidden" onClick={() => setMenuOpen(false)} />
+            <div className="pop-in absolute inset-x-0 top-full z-40 border-b border-border bg-background shadow-lg xl:hidden">
               <nav className="mx-auto flex max-w-[1280px] flex-col px-4 py-3 md:px-8">
                 {NAV.map((n) => (
                   <a
