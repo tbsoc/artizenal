@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { PasInfo } from "@/components/PasExplainer"
 import { ArrowDown, Landmark, Sparkles, Sprout } from "lucide-react"
 import { Bread, Button, Card, Empty, Input, LinkButton, SectionTitle } from "@/components/ui"
 import { ME, POINT_RULES, getFund, getProject, getUser, myHoldingsUsd, myProject, useStore } from "@/lib/store"
@@ -49,7 +50,12 @@ export function Wallet() {
     <div className="space-y-8">
       <SectionTitle
         title={`${me?.name.split(" ")[0] ?? "Your"}'s wallet`}
-        sub="Convert USDC, EURC or ETH into pas tokens 1:1. While you hold them, the reserves behind them earn yield in DeFi, and that yield funds matching."
+        sub={
+          <>
+            Convert USDC, EURC or ETH into pas tokens 1:1. While you hold them, the reserves behind them earn yield in DeFi, and that yield funds
+            matching. <PasInfo label="How it works" />
+          </>
+        }
       />
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_400px]">

@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { PasInfo } from "@/components/PasExplainer"
 import { Landmark, Lock, Sparkles } from "lucide-react"
 import { Avatar, Button, Card, Input, LiveYield, Pts, SectionTitle, Stat } from "@/components/ui"
 import { ME, POINT_RULES, blendedApy, dailyYield, feesUsd, getUser, totalSupply, useStore, wealthUnits } from "@/lib/store"
@@ -42,7 +43,12 @@ export function Wealth() {
             <Landmark size={26} className="text-crust" /> Pastry Wealth Fund
           </span>
         }
-        sub="Every pas token and every endowment sits here. The reserves earn yield in DeFi through savings protocols and ETH staking. Only that yield is used, and it pays for matching."
+        sub={
+          <>
+            Every pas token and every endowment sits here. The reserves earn yield in DeFi through savings protocols and ETH staking. Only that yield
+            is used, and it pays for matching. <PasInfo label="How it works" />
+          </>
+        }
       />
 
       <Card className="grid grid-cols-1 gap-6 p-6 md:p-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.5fr)] lg:items-center lg:gap-10">

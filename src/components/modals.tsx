@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { PasInfo } from "./PasExplainer"
 import { ArrowRight, X, PartyPopper, ShoppingBasket, Trash2, Info, Sparkles, ScrollText, Scale, ShieldCheck } from "lucide-react"
 import { Bread, BreadLogo, Button, CommunityLinks, Field, Input, Loaf, Modal, Pts, Select, MechanismBadge, Textarea } from "./ui"
 import { Cover } from "./Cover"
@@ -118,6 +119,11 @@ export function DonateModal({
         </div>
       ) : (
         <div className="space-y-5">
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm font-semibold">Pay with</span>
+              <PasInfo />
+            </div>
           <div className="grid grid-cols-3 gap-2">
             {ASSET_IDS.map((a) => (
               <button
@@ -132,6 +138,7 @@ export function DonateModal({
                 <div className="text-xs text-muted-foreground tabular-nums">{fmtUnits(a, state.me.art[a])} held</div>
               </button>
             ))}
+          </div>
           </div>
 
           <div>
@@ -226,6 +233,10 @@ export function DonateModal({
 export function AssetPicker({ value, onChange }: { value: Asset; onChange: (a: Asset) => void }) {
   const { state } = useStore()
   return (
+    <div>
+      <div className="mb-1.5 flex justify-end">
+        <PasInfo />
+      </div>
     <div className="grid grid-cols-3 gap-2">
       {ASSET_IDS.map((a) => (
         <button
@@ -240,6 +251,7 @@ export function AssetPicker({ value, onChange }: { value: Asset; onChange: (a: A
           <div className="text-xs text-muted-foreground tabular-nums">{fmtUnits(a, state.me.art[a])} held</div>
         </button>
       ))}
+    </div>
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { ArrowRight, Check, X, Landmark, Sprout, Vote, HandCoins, Sparkles, History } from "lucide-react"
+import { PasInfo } from "@/components/PasExplainer"
 import { ArtizenBadge, Avatar, Card, LinkButton, LiveYield, Loaf, SectionTitle } from "@/components/ui"
 import { CampaignRow, FundCard, ProjectCard } from "@/components/cards"
 import { Cover } from "@/components/Cover"
@@ -25,6 +26,7 @@ function MatchingPool() {
         </div>
         <LiveYield base={state.yieldPool} perDay={dailyYield(state)} className="mt-2 block text-4xl font-bold text-community md:text-5xl" />
         <div className="mt-1 text-sm text-muted-foreground">Yield earned so far, growing every second</div>
+        <PasInfo className="mt-2" label="Where does this come from?" />
       </div>
       <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:border-l lg:border-border lg:pl-10">
         {stats.map((s) => (

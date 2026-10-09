@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { PasInfo } from "./PasExplainer"
 import type { ReactNode } from "react"
 import { ShoppingBasket, FastForward, RotateCcw, CalendarClock, ChevronDown, CheckCircle2, AlertCircle, Info, Menu, X } from "lucide-react"
 import { Avatar, BreadLogo, Button, CommunityLinks, Pts } from "./ui"
@@ -223,14 +224,17 @@ export function Layout({ path, children }: { path: string; children: ReactNode }
                     <span className="text-muted-foreground">Wallet</span>
                     {usd(myHoldingsUsd(state))}
                   </a>
-                  <div className="col-span-2 flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2 text-sm">
-                    <span className="text-muted-foreground">Show totals in</span>
-                    <CurrencySelect className="h-8 rounded-lg px-2 font-semibold" />
-                  </div>
                   <a href="#/allocate" className="flex items-center justify-between rounded-xl bg-card px-3 py-3 text-sm font-semibold border border-border">
                     <span className="text-muted-foreground">Points</span>
                     <Pts value={pointsBalance(state, ME)} />
                   </a>
+                  <div className="col-span-2 flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2 text-sm">
+                    <span className="text-muted-foreground">Show totals in</span>
+                    <CurrencySelect className="h-8 rounded-lg px-2 font-semibold" />
+                  </div>
+                  <div className="col-span-2 px-1 py-1">
+                    <PasInfo />
+                  </div>
                 </div>
               </nav>
             </div>
