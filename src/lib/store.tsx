@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import type { ReactNode } from "react"
-import { ASSETS, ASSET_IDS, CURATOR_SHARE, DONATION_FEE, fmtUnits, money, setDisplayCurrency, toUsd, zero } from "./assets"
+import { ASSETS, ASSET_IDS, MAX_CURATOR_SHARE, DONATION_FEE, FEE_TO_WEALTH, fmtUnits, money, setDisplayCurrency, toUsd, zero } from "./assets"
 import type { Asset } from "./assets"
 import { campaignContributions, computeMatches, campaignMatches } from "./matching"
 import { MIN_FUND_PLEDGE, PROJECT_DEPOSIT, PROPOSE_MIN_POINTS, STATE_VERSION, buildSeed, rng, withPhoto } from "./seed"
@@ -32,7 +32,7 @@ export const POINT_RULES = {
   earlyBackerSlots: 10,
   holdingPer10PerDay: 1,
   createProject: 200,
-  artizenAlumni: 1000,
+  joinRound: 150,
   proposeFund: 300,
   curate: 150,
 }
@@ -167,7 +167,19 @@ export function myProject(s: State) {
   return s.projects.find((p) => p.creatorId === ME)
 }
 
-/** Units the giver sent, before the Wealth Fund fee and curator share. */
+/** Split a donation fee: one part into the Wealth Fund for good, the rest to Bread Coop for upkeep. */
+export function takeFee(s: State, asset: Asset, fee: number) {
+  const toWealth = fee * (FEE_TO_WEALTH / DONATION_FEE)
+  s.feeUnits[asset] += toWealth
+  s.upkeepUnits[asset] += fee - toWealth
+}
+
+/** The share of direct gifts a fund's curators take. */
+export function curatorShare(f: Fund) {
+  return Math.min(MAX_CURATOR_SHARE, Math.max(0, f.curatorShare ?? MAX_CURATOR_SHARE))
+}
+
+/** Units the giver sent, before the fee and curator share. */
 export function giftUnits(g: FundDonation) {
   return g.units + (g.fee ?? 0) + (g.curatorCut ?? 0)
 }
@@ -282,7 +294,7 @@ function addDonation(
   // 10% of every donation goes into the Wealth Fund; the project gets the rest.
   const fee = units * DONATION_FEE
   const net = units - fee
-  s.feeUnits[asset] += fee
+  takeFee(s, asset, fee)
   const amount = toUsd(asset, net)
   const priorDonors = new Set(s.donations.filter((d) => d.projectId === projectId).map((d) => d.from))
   s.donations.push({ id: uid("d"), from, projectId, campaignId, amount, asset, units: net, fee, day: s.day })
@@ -509,6 +521,7 @@ export interface NewFund {
   backingGoal: number
   initialPledge: number
   pledgeAsset: Asset
+  curatorShare: number
 }
 
 export interface NewCampaign {
@@ -630,9 +643,9 @@ function useStoreValue() {
           if (units > s.me.art[asset] + 1e-9) return { ok: false, error: `Not enough ${A.token}. Convert some ${A.base} first.` }
           const f = getFund(s, fundId)!
           const fee = units * DONATION_FEE
-          s.feeUnits[asset] += fee
+          takeFee(s, asset, fee)
           // Curators get a share of gifts from anyone but themselves.
-          const cut = f.curators.includes(ME) ? 0 : units * CURATOR_SHARE
+          const cut = f.curators.includes(ME) ? 0 : units * curatorShare(f)
           const amount = toUsd(asset, units - fee - cut)
           s.me.art[asset] -= units
           s.fundDonations.push({
@@ -745,7 +758,10 @@ function useStoreValue() {
             if (c && !c.projectIds.includes(id)) c.projectIds.push(id)
           }
           award(s, ME, POINT_RULES.createProject, "create-project", `Created ${p.title}`)
-          if (p.artizen) award(s, ME, POINT_RULES.artizenAlumni, "artizen-alumni", "Artizen alumni welcome")
+          for (const cid of p.campaignIds) {
+            const c = s.campaigns.find((x) => x.id === cid)
+            if (c) award(s, ME, POINT_RULES.joinRound, "join-round", `${p.title} joined ${c.name}`)
+          }
           log(s, ME, `launched the project ${p.title}`, `#/p/${id}`)
           return { ok: true, id }
         })
@@ -763,9 +779,11 @@ function useStoreValue() {
       joinCampaign(projectId: string, campaignId: string) {
         mutate((s) => {
           const c = s.campaigns.find((x) => x.id === campaignId)
-          if (c && !c.projectIds.includes(projectId)) c.projectIds.push(projectId)
           const p = getProject(s, projectId)
-          if (c && p) log(s, ME, `entered ${p.title} into ${c.name}`, `#/f/${c.fundId}`)
+          if (!c || !p || c.projectIds.includes(projectId)) return
+          c.projectIds.push(projectId)
+          if (p.creatorId === ME) award(s, ME, POINT_RULES.joinRound, "join-round", `${p.title} joined ${c.name}`)
+          log(s, ME, `entered ${p.title} into ${c.name}`, `#/f/${c.fundId}`)
         })
       },
 
@@ -795,6 +813,7 @@ function useStoreValue() {
             autoStream: true,
             pledgeGoal: f.pledgeGoal,
             backingGoal: f.backingGoal,
+            curatorShare: Math.min(MAX_CURATOR_SHARE, Math.max(0, f.curatorShare)),
             coverSeed: Math.floor(Math.random() * 1000),
             createdDay: s.day,
           }
@@ -803,7 +822,7 @@ function useStoreValue() {
           log(s, ME, `proposed the fund ${f.name}`, `#/f/${id}`)
           if (f.initialPledge > 0) {
             const fee = f.initialPledge * DONATION_FEE
-            s.feeUnits[pa] += fee
+            takeFee(s, pa, fee)
             s.me.art[pa] -= f.initialPledge
             s.fundDonations.push({ id: uid("fd"), from: ME, fundId: id, amount: toUsd(pa, f.initialPledge - fee), asset: pa, units: f.initialPledge - fee, fee, day: s.day })
             award(s, ME, toUsd(pa, f.initialPledge) * POINT_RULES.perFundBread, "donate-fund", `Pledged to ${f.name}`)
@@ -864,6 +883,13 @@ function useStoreValue() {
       dismissOnboarding() {
         mutate((s) => {
           s.me.onboardingDismissed = true
+        })
+      },
+
+      setCuratorShare(fundId: string, share: number) {
+        mutate((s) => {
+          const f = getFund(s, fundId)
+          if (f && f.curators.includes(ME)) f.curatorShare = Math.min(MAX_CURATOR_SHARE, Math.max(0, share))
         })
       },
 

@@ -3,7 +3,7 @@ import { Lock, Scale, Equal, X as Times, Sparkles } from "lucide-react"
 import { Button, Card, Field, Input, LinkButton, Pts, Select, Textarea } from "@/components/ui"
 import { Cover } from "@/components/Cover"
 import { AssetPicker, QuickBake } from "@/components/modals"
-import { ASSETS, fmtUnits, toUsd } from "@/lib/assets"
+import { ASSETS, MAX_CURATOR_SHARE, fmtUnits, toUsd } from "@/lib/assets"
 import type { Asset } from "@/lib/assets"
 import { ME, POINT_RULES, useStore, userPoints } from "@/lib/store"
 import { MIN_FUND_PLEDGE, PROPOSE_MIN_POINTS } from "@/lib/seed"
@@ -23,7 +23,8 @@ export function ProposeFund() {
   const [type, setType] = useState<Mechanism["type"]>("qf")
   const [cap, setCap] = useState(50)
   const [x, setX] = useState(2)
-  const [pledgeGoal, setPledgeGoal] = useState(1500)
+  const [pledgeGoal, setPledgeGoal] = useState(5000)
+  const [share, setShare] = useState(MAX_CURATOR_SHARE)
   const [backingGoal, setBackingGoal] = useState(10000)
   const [initialPledge, setInitialPledge] = useState(100)
   const [pledgeAsset, setPledgeAsset] = useState<Asset>("USD")
@@ -54,7 +55,7 @@ export function ProposeFund() {
   }
 
   const submit = () => {
-    const r = actions.proposeFund({ name: name.trim(), tagline: tagline.trim(), description: description.trim(), category, mechanism, pledgeGoal, backingGoal, initialPledge, pledgeAsset })
+    const r = actions.proposeFund({ name: name.trim(), tagline: tagline.trim(), description: description.trim(), category, mechanism, pledgeGoal, backingGoal, initialPledge, pledgeAsset, curatorShare: share })
     if (!r.ok) return toast(r.error, "err")
     toast(`${name} proposed! +${num(POINT_RULES.proposeFund + pledgeUsd * POINT_RULES.perFundBread)} points`)
     go(`/f/${r.id}`)
@@ -70,7 +71,7 @@ export function ProposeFund() {
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px] lg:gap-10">
       <div>
         <h1 className="font-display text-3xl font-semibold md:text-[40px] tracking-tight">Propose a fund</h1>
-        <p className="mt-1 text-muted-foreground">Launches once it raises at least {usd(MIN_FUND_PLEDGE)} in matching funds and hits its points goal.</p>
+        <p className="mt-1 text-muted-foreground">Launches once it raises at least {usd(MIN_FUND_PLEDGE)} in pledges and hits its points goal. The pledges become matching money for its rounds.</p>
         <div className="mt-8 space-y-6">
           <Card className="space-y-5 p-6">
             <Field label="Fund name">
@@ -144,6 +145,17 @@ export function ProposeFund() {
               </Field>
             </div>
             <div className="mt-4">
+              <Field label="Curator share of direct gifts" hint={`Up to ${Math.round(MAX_CURATOR_SHARE * 100)}%. You can change it later.`}>
+                <Select value={String(share)} onChange={(e) => setShare(Number(e.target.value))}>
+                  {[0, 0.05, 0.1, 0.15, 0.2].filter((v) => v <= MAX_CURATOR_SHARE).map((v) => (
+                    <option key={v} value={v}>
+                      {Math.round(v * 100)}%
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            <div className="mt-4">
               <AssetPicker
                 value={pledgeAsset}
                 onChange={(a) => {
@@ -192,7 +204,7 @@ export function ProposeFund() {
             <div className="flex items-center gap-2 font-semibold text-coop-ink">
               <Sparkles size={15} /> +{num(POINT_RULES.proposeFund + pledgeUsd * POINT_RULES.perFundBread)} points
             </div>
-            <div className="mt-1 text-muted-foreground">for proposing and pledging. You'll be the fund's first curator and get 20% of every gift to it.</div>
+            <div className="mt-1 text-muted-foreground">for proposing and pledging. You'll be the fund's first curator and can take up to 20% of gifts to it.</div>
             <Button size="lg" className="mt-4 w-full" disabled={!name.trim() || !tagline.trim() || pledgeGoal < MIN_FUND_PLEDGE || initialPledge > state.me.art[pledgeAsset] + 1e-9} onClick={submit}>
               Propose fund
             </Button>

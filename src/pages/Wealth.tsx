@@ -56,7 +56,7 @@ export function Wealth() {
           <div className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Total value</div>
           <div className="mt-2 font-display text-4xl font-semibold md:text-5xl">{usd(totalSupply(state))}</div>
           <div className="mt-1 text-sm text-muted-foreground">
-            {usd(endowedUsd + feesUsd(state))} is permanent: {usd(endowedUsd)} endowed, {usd(feesUsd(state))} from the 10% donation fee
+            {usd(endowedUsd + feesUsd(state))} is permanent: {usd(endowedUsd)} endowed, {usd(feesUsd(state))} from its half of the donation fee
           </div>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:border-l lg:border-border lg:pl-10">

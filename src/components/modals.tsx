@@ -3,12 +3,12 @@ import { PasInfo } from "./PasExplainer"
 import { ArrowRight, X, PartyPopper, ShoppingBasket, Trash2, Info, Sparkles, ScrollText, Scale, ShieldCheck } from "lucide-react"
 import { Bread, BreadLogo, Button, CommunityLinks, Field, Input, Loaf, Modal, Pts, Select, MechanismBadge, Textarea } from "./ui"
 import { Cover } from "./Cover"
-import { POINT_RULES, campaignStatus, getFund, getProject, ME, useStore } from "@/lib/store"
+import { POINT_RULES, campaignStatus, getFund, getProject, ME, useStore, curatorShare } from "@/lib/store"
 import { basketMatch, marginalMatch, MECHANISM_INFO } from "@/lib/matching"
 import type { Fund, Project } from "@/lib/types"
 import { cn, num, usd } from "@/lib/utils"
 import { isSubscribed, subscribe } from "@/lib/signup"
-import { ASSETS, ASSET_IDS, CURATOR_SHARE, DONATION_FEE, fmtUnits, toUsd } from "@/lib/assets"
+import { ASSETS, ASSET_IDS, DONATION_FEE, FEE_TO_UPKEEP, FEE_TO_WEALTH, fmtUnits, toUsd } from "@/lib/assets"
 import type { Asset } from "@/lib/assets"
 
 /** Inline helper shown when the user doesn't hold enough of a pas token. */
@@ -175,10 +175,11 @@ export function DonateModal({
               The project gets <b className="text-foreground">{fmtUnits(asset, units * (1 - DONATION_FEE))} {A.token}</b>
             </span>
             <span>
-              {Math.round(DONATION_FEE * 100)}% ({fmtUnits(asset, units * DONATION_FEE)}) to the{" "}
+              {Math.round(FEE_TO_WEALTH * 100)}% to the{" "}
               <a href="#/wealth" className="font-semibold text-crust hover:underline">
                 Wealth Fund
               </a>
+              , {Math.round(FEE_TO_UPKEEP * 100)}% to Bread Coop
             </span>
           </div>
 
@@ -272,7 +273,7 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
   const [link, setLink] = useState("")
   const [anonymous, setAnonymous] = useState(false)
   const proposed = fund.status === "proposed"
-  const cut = fund.curators.includes(ME) ? 0 : CURATOR_SHARE
+  const cut = fund.curators.includes(ME) ? 0 : curatorShare(fund)
   const A = ASSETS[asset]
   const value = toUsd(asset, units)
   const points = Math.round(value * POINT_RULES.perFundBread)
@@ -334,12 +335,16 @@ export function FundDonateModal({ fund, open, onClose }: { fund: Fund; open: boo
           )}
           <div className="flex justify-between gap-3">
             <span>
-              {Math.round(DONATION_FEE * 100)}% to the{" "}
+              {Math.round(FEE_TO_WEALTH * 100)}% to the{" "}
               <a href="#/wealth" className="font-semibold text-crust hover:underline">
                 Wealth Fund
               </a>
             </span>
-            <span className="tabular-nums">{fmtUnits(asset, units * DONATION_FEE)}</span>
+            <span className="tabular-nums">{fmtUnits(asset, units * FEE_TO_WEALTH)}</span>
+          </div>
+          <div className="flex justify-between gap-3">
+            <span>{Math.round(FEE_TO_UPKEEP * 100)}% to Bread Coop for upkeep</span>
+            <span className="tabular-nums">{fmtUnits(asset, units * FEE_TO_UPKEEP)}</span>
           </div>
         </div>
         {!proposed && (
@@ -482,7 +487,9 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">To the Wealth Fund ({Math.round(DONATION_FEE * 100)}%)</span>
+              <span className="text-muted-foreground">
+                Fee: {Math.round(FEE_TO_WEALTH * 100)}% Wealth Fund, {Math.round(FEE_TO_UPKEEP * 100)}% Bread Coop
+              </span>
               <span className="tabular-nums">
                 {fmtUnits(asset, total * DONATION_FEE)} {A.token}
               </span>

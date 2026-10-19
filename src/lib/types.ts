@@ -77,6 +77,7 @@ export interface Fund {
   pledgeGoal: number // proposed funds: pasUSD needed to launch
   backingGoal: number // proposed funds: points needed to launch
   coverSeed: number
+  curatorShare?: number // share of direct gifts the curators take, 0 to MAX_CURATOR_SHARE
   image?: string // bundled stock photo path
   photo?: { title: string; by: string; license: string; licenseUrl: string; url: string }
   createdDay: number
@@ -142,6 +143,7 @@ export type PointsReason =
   | "holding"
   | "create-project"
   | "artizen-alumni"
+  | "join-round"
   | "propose-fund"
   | "curate"
   | "endow"
@@ -208,7 +210,8 @@ export interface State {
   seasonLength: number
   supply: Record<Asset, number> // pas tokens held by other members (redeemable)
   endowed: Record<Asset, number> // permanent principal from everyone, in units
-  feeUnits: Record<Asset, number> // permanent principal from the 10% donation fee
+  feeUnits: Record<Asset, number> // permanent principal from the Wealth Fund half of the donation fee
+  upkeepUnits: Record<Asset, number> // the half of the donation fee that pays Bread Coop for upkeep
   yieldPool: number
   yieldLifetime: number
   me: Me

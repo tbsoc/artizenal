@@ -21,7 +21,7 @@ const EARN = [
   { icon: Sprout, title: "Hold pas tokens", value: "1 per $10 / day", note: "Daily" },
   { icon: Rocket, title: "Launch a project", value: `+${POINT_RULES.createProject}`, note: "One time" },
   { icon: Landmark, title: "Endow the Wealth Fund", value: `${POINT_RULES.perEndowedUsd} per $1`, note: "Permanent" },
-  { icon: History, title: "Artizen alumni", value: `+${num(POINT_RULES.artizenAlumni)}`, note: "One time" },
+  { icon: History, title: "Get into a round", value: `+${POINT_RULES.joinRound}`, note: "Per round your project joins" },
   { icon: Vote, title: "Curate", value: `+${POINT_RULES.proposeFund} / +${POINT_RULES.curate}`, note: "Propose a fund / run a round" },
 ]
 
@@ -35,6 +35,7 @@ const REASON_LABEL: Record<string, string> = {
   holding: "Holding",
   "create-project": "New project",
   "artizen-alumni": "Artizen alumni",
+  "join-round": "Joined a round",
   "propose-fund": "Proposed fund",
   curate: "Curation",
   endow: "Endowment",

@@ -1,4 +1,4 @@
-import { ASSETS, ASSET_IDS, CURATOR_SHARE, DONATION_FEE, zero } from "./assets"
+import { ASSETS, ASSET_IDS, DONATION_FEE, FEE_TO_WEALTH, zero } from "./assets"
 import type { Asset } from "./assets"
 import { campaignContributions, computeMatches } from "./matching"
 import { FUND_PHOTOS, PHOTOS } from "./photos"
@@ -15,11 +15,11 @@ import type {
   User,
 } from "./types"
 
-export const STATE_VERSION = 14
+export const STATE_VERSION = 15
 export const PROJECT_DEPOSIT = 25
 export const PROPOSE_MIN_POINTS = 1000
 /** A proposed fund must raise at least this much matching money (in dollars) before it can launch. */
-export const MIN_FUND_PLEDGE = 1000
+export const MIN_FUND_PLEDGE = 5000
 export const START_USDC = 750
 export const START_BASE: Record<Asset, number> = { USD: 750, EUR: 400, ETH: 0.25 }
 export const START_ART: Record<Asset, number> = { USD: 250, EUR: 100, ETH: 0.05 }
@@ -282,6 +282,7 @@ const funds: Fund[] = [
       "When Artizen shut down, hundreds of projects lost matching they had already earned. This fund exists to finish those rounds. Any project that can show it was live on Artizen is eligible.\n\nCurated by former Artizen artists and fund council members. It uses quadratic funding so the community, not a handful of big donors, decides where the money goes.",
     category: "Art",
     curators: ["noor", "maya"],
+    curatorShare: 0.2,
     proposedBy: "noor",
     mechanism: { type: "qf" },
     status: "active",
@@ -300,6 +301,7 @@ const funds: Fund[] = [
       "We fund repair, reuse, community energy and other climate work that a neighborhood can pick up and run on its own. Everything we fund has to be openly licensed.\n\nWe use a 2× multiplier because our donors told us they want to see their impact doubled, simply.",
     category: "Climate",
     curators: ["kofi", "dev"],
+    curatorShare: 0.1,
     proposedBy: "kofi",
     mechanism: { type: "multiplier", x: 2 },
     status: "active",
@@ -318,6 +320,7 @@ const funds: Fund[] = [
       "Grants and matching for zines, small presses, translation and community publishing. We match every donor one-for-one up to 50 pasUSD per project, so a lot of small gifts go a long way.",
     category: "Publishing",
     curators: ["ana", "maya"],
+    curatorShare: 0.15,
     proposedBy: "ana",
     mechanism: { type: "match", cap: 50 },
     status: "active",
@@ -336,6 +339,7 @@ const funds: Fund[] = [
       "Citizen science, open hardware and participatory research. Quadratic funding helps us find the projects with the broadest community support.",
     category: "Science",
     curators: ["theo", "june", "kai"],
+    curatorShare: 0.2,
     proposedBy: "theo",
     mechanism: { type: "qf" },
     status: "active",
@@ -354,6 +358,7 @@ const funds: Fund[] = [
       "Independent recordings, archives, instruments and tours. 1.5× multiplier on every pasUSD given to a project in an active round.",
     category: "Music",
     curators: ["bea", "sol"],
+    curatorShare: 0.1,
     proposedBy: "bea",
     mechanism: { type: "multiplier", x: 1.5 },
     status: "active",
@@ -372,12 +377,13 @@ const funds: Fund[] = [
       "A proposed fund for the infrastructure that lets communities feed themselves: seed libraries, shared kitchens, food co-ops and land access. Needs pledges and community backing to launch.",
     category: "Food",
     curators: ["priya", "ines"],
+    curatorShare: 0.2,
     proposedBy: "priya",
     mechanism: { type: "qf" },
     status: "proposed",
     reserve: 0,
     autoStream: true,
-    pledgeGoal: 2500,
+    pledgeGoal: 5000,
     backingGoal: 20000,
     coverSeed: 71,
     createdDay: 34,
@@ -390,12 +396,13 @@ const funds: Fund[] = [
       "A proposed fund that only supports projects led by disabled designers and artists. Curated by a rotating panel of disabled creators.",
     category: "Tech",
     curators: ["lena"],
+    curatorShare: 0.05,
     proposedBy: "lena",
     mechanism: { type: "match", cap: 100 },
     status: "proposed",
     reserve: 0,
     autoStream: true,
-    pledgeGoal: 2000,
+    pledgeGoal: 5000,
     backingGoal: 15000,
     coverSeed: 86,
     createdDay: 38,
@@ -607,11 +614,14 @@ export function buildSeed(): State {
 
   // Each gift sends 10% to the Wealth Fund and 20% to the fund's curators, unless a curator gave it.
   const feeUnits = zero()
+  const upkeepUnits = zero()
   const fundDonations = fundGifts.map((g) => {
-    const curators = funds.find((f) => f.id === g.fundId)!.curators
+    const fund = funds.find((f) => f.id === g.fundId)!
+    const curators = fund.curators
     const fee = g.units * DONATION_FEE
-    const cut = curators.includes(g.from) ? 0 : g.units * CURATOR_SHARE
-    feeUnits[g.asset] += fee
+    const cut = curators.includes(g.from) ? 0 : g.units * (fund.curatorShare ?? 0)
+    feeUnits[g.asset] += fee * (FEE_TO_WEALTH / DONATION_FEE)
+    upkeepUnits[g.asset] += fee * (1 - FEE_TO_WEALTH / DONATION_FEE)
     const units = g.units - fee - cut
     return { ...g, units, amount: units * ASSETS[g.asset].usd, fee, curatorCut: cut || undefined }
   })
@@ -639,6 +649,7 @@ export function buildSeed(): State {
     supply,
     endowed,
     feeUnits,
+    upkeepUnits,
     yieldPool: perDay * (SEED_DAY - 30),
     yieldLifetime: perDay * SEED_DAY,
     me: {

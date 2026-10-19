@@ -16,8 +16,7 @@ import {
   Pts,
   Stat,
   StatusPill,
-  Textarea,
-} from "@/components/ui"
+  Textarea, Select } from "@/components/ui"
 import { Cover } from "@/components/Cover"
 import { ProjectCard } from "@/components/cards"
 import { FundDonateModal } from "@/components/modals"
@@ -36,11 +35,12 @@ import {
   useStore,
   curatorEarned,
   giftUnits,
+  curatorShare,
 } from "@/lib/store"
 import { MECHANISM_INFO, campaignContributions, campaignMatches, mechanismLabel } from "@/lib/matching"
 import type { Campaign, Fund } from "@/lib/types"
 import { cn, dayLabel, num, usd } from "@/lib/utils"
-import { ASSETS, CURATOR_SHARE, fmtUnits, toUsd } from "@/lib/assets"
+import { ASSETS, MAX_CURATOR_SHARE, fmtUnits, toUsd } from "@/lib/assets"
 
 function GivePoints({ fund }: { fund: Fund }) {
   const { state, actions, toast } = useStore()
@@ -314,8 +314,14 @@ function Supporters({ fund, onGive }: { fund: Fund; onGive: () => void }) {
             {anonTotal > 0 && `, including ${usd(anonTotal)} anonymously`}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Curators get {Math.round(CURATOR_SHARE * 100)}% of each gift for running the fund
-            {earned > 0 && <>, {usd(earned)} so far</>}.
+            {curatorShare(fund) > 0 ? (
+              <>
+                Curators take {Math.round(curatorShare(fund) * 100)}% of each gift for running the fund
+                {earned > 0 && <>, {usd(earned)} so far</>}.
+              </>
+            ) : (
+              <>The curators take no share of gifts to this fund.</>
+            )}
           </p>
         </div>
         <Button variant="outline" onClick={onGive}>
@@ -567,6 +573,20 @@ export function FundPage({ id, query }: { id: string; query: URLSearchParams }) 
                 <span>
                   <span className="font-medium">Send yield to live rounds</span>
                                   </span>
+              </label>
+              <label className="mt-4 block text-sm">
+                <span className="font-medium">Your share of direct gifts</span>
+                <Select
+                  value={String(curatorShare(fund))}
+                  onChange={(e) => actions.setCuratorShare(fund.id, Number(e.target.value))}
+                  className="mt-1.5"
+                >
+                  {[0, 0.05, 0.1, 0.15, 0.2].filter((v) => v <= MAX_CURATOR_SHARE).map((v) => (
+                    <option key={v} value={v}>
+                      {Math.round(v * 100)}%
+                    </option>
+                  ))}
+                </Select>
               </label>
               <Button size="sm" variant="outline" className="mt-4 w-full" onClick={() => setStartOpen(true)}>
                 <Rocket size={14} /> New round

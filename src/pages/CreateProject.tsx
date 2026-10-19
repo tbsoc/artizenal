@@ -53,7 +53,7 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
 
   const openRounds = state.campaigns.filter((c) => campaignStatus(c, state.day) !== "ended" && getFund(state, c.fundId)?.status === "active")
   const valid = title.trim() && tagline.trim() && description.trim().length >= 40 && location.trim() && goal > 0
-  const points = POINT_RULES.createProject + (wasArtizen ? POINT_RULES.artizenAlumni : 0)
+  const points = POINT_RULES.createProject + campaignIds.length * POINT_RULES.joinRound
 
   const submit = () => {
     const r = actions.createProject({
@@ -155,7 +155,7 @@ export function CreateProject({ query }: { query: URLSearchParams }) {
                 <div className="flex items-center gap-2 font-semibold">
                   <History size={16} /> This project was on Artizen
                 </div>
-                <div className="mt-0.5 text-sm text-muted-foreground">Alumni badge + {num(POINT_RULES.artizenAlumni)} points</div>
+                <div className="mt-0.5 text-sm text-muted-foreground">Shows an alumni badge on your project</div>
               </div>
             </label>
             {wasArtizen && (

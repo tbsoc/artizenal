@@ -19,11 +19,11 @@ const QA: { q: string; a: string }[] = [
   },
   {
     q: "Is there a fee?",
-    a: "10% of every donation goes into the Pastry Wealth Fund for good. It keeps earning yield, so every gift grows the matching for everyone.",
+    a: "10% of every donation and sponsorship. Half goes into the Pastry Wealth Fund for good, where it keeps earning yield for matching. The other half pays Bread Coop to run the platform.",
   },
   {
     q: "Do curators get paid?",
-    a: "Yes. A fund's curators get 20% of every direct gift to the fund, split between them, for running its rounds. Gifts from the curators themselves are not split.",
+    a: "Yes. A fund's curators get a share of every direct gift to the fund, up to 20%, for running its rounds. Each fund sets its own rate. Gifts from the curators themselves are not split.",
   },
   {
     q: "What does endowing mean?",
@@ -39,7 +39,7 @@ const QA: { q: string; a: string }[] = [
   },
   {
     q: "I was on Artizen. What happens to my project?",
-    a: `Bring it over. You'll get an alumni badge and ${num(POINT_RULES.artizenAlumni)} points.`,
+    a: "Bring it over. It gets an alumni badge, and you earn points for the page and for each round it joins.",
   },
   {
     q: "Is any of this real?",

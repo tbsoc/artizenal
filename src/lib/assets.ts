@@ -12,11 +12,13 @@ export const ASSETS: Record<
   ETH: { token: "pasETH", base: "ETH", usd: 3200, apy: 0.03, digits: 4, presets: [0.005, 0.01, 0.02, 0.05, 0.1], yieldSource: "ETH staking" },
 }
 
-/** Share of every donation that goes into the Wealth Fund for good. */
-export const DONATION_FEE = 0.1
+/** Fee on every donation: half goes into the Wealth Fund for good, half pays Bread Coop to run the platform. */
+export const FEE_TO_WEALTH = 0.05
+export const FEE_TO_UPKEEP = 0.05
+export const DONATION_FEE = FEE_TO_WEALTH + FEE_TO_UPKEEP
 
-/** Share of a direct gift to a fund that goes to its curators, split evenly. */
-export const CURATOR_SHARE = 0.2
+/** Most a fund's curators can take from direct gifts to it. Each fund sets its own rate up to this. */
+export const MAX_CURATOR_SHARE = 0.2
 
 export const toUsd = (asset: Asset, units: number) => units * ASSETS[asset].usd
 
